@@ -7,8 +7,15 @@ import 'package:trading_app/features/market/presentation/market_providers.dart';
 import 'package:trading_app/persistence/local_storage_service.dart';
 
 void main() {
-  testWidgets('TradingApp Google login flow, Profile Sheet, and Navigation test',
+  testWidgets('021 Trade Login flow, Profile Sheet, and Navigation test',
       (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
     SharedPreferences.setMockInitialValues({});
     final storage = await LocalStorageService.create();
 
@@ -24,18 +31,23 @@ void main() {
     await tester.pumpAndSettle();
 
     // 1. Unauthenticated user starts at Login Screen
-    expect(find.text('021 Trading App'), findsOneWidget);
-    expect(find.text('Continue with Google (Gmail)'), findsOneWidget);
+    expect(find.text('021 Trade'), findsOneWidget);
+    expect(find.text('Sign in to continue trading'), findsOneWidget);
+    expect(find.text('MOBILE NUMBER'), findsOneWidget);
+    expect(find.text('+91'), findsOneWidget);
+    expect(find.text('PASSWORD'), findsOneWidget);
+    expect(find.text('Forgot password?'), findsOneWidget);
+    expect(find.text('Sign In'), findsOneWidget);
+    expect(find.text('Simulated trading. No real money involved.'), findsOneWidget);
 
-    // 2. Perform Google Sign In
-    final googleButton = find.text('Continue with Google (Gmail)');
-    await tester.ensureVisible(googleButton);
-    await tester.tap(googleButton);
+    // 2. Tap Sign In with valid mobile number
+    final signInButton = find.widgetWithText(ElevatedButton, 'Sign In');
+    await tester.tap(signInButton);
     await tester.pump();
-    await tester.pump(const Duration(seconds: 2));
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.pumpAndSettle();
 
-    // 3. User is now authenticated with Google and lands on Market Overview
+    // 3. User is now authenticated and lands on Market Overview
     expect(find.text('Market Overview'), findsOneWidget);
     expect(find.text('10 Universe Stocks'), findsOneWidget);
     expect(find.text('RELIANCE'), findsOneWidget);
@@ -45,10 +57,7 @@ void main() {
     await tester.tap(avatarFinder);
     await tester.pumpAndSettle();
 
-    // 5. Verify Google Profile details in Profile BottomSheet
-    expect(find.text('Google Trader'), findsOneWidget);
-    expect(find.text('trader.google@gmail.com'), findsOneWidget);
-    expect(find.text('Google OAuth Authenticated'), findsOneWidget);
+    // 5. Verify Profile details
     expect(find.text('₹1,00,000.00'), findsOneWidget);
     expect(find.text('Log Out from Account'), findsOneWidget);
 
@@ -56,7 +65,7 @@ void main() {
     await tester.tap(find.text('Log Out from Account'));
     await tester.pumpAndSettle();
 
-    expect(find.text('021 Trading App'), findsOneWidget);
-    expect(find.text('Continue with Google (Gmail)'), findsOneWidget);
+    expect(find.text('021 Trade'), findsOneWidget);
+    expect(find.text('Sign In'), findsOneWidget);
   });
 }

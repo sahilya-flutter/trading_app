@@ -6,7 +6,7 @@ import 'package:trading_app/firebase_options.dart';
 import 'package:trading_app/persistence/local_storage_service.dart';
 
 void main() {
-  group('Auth & Firebase Google Login Tests', () {
+  group('Auth & 021 Trade Login Tests', () {
     late LocalStorageService storage;
     late AuthRepository authRepo;
 
@@ -23,6 +23,22 @@ void main() {
     test('Initial state is unauthenticated when no session exists', () {
       expect(authRepo.isAuthenticated, isFalse);
       expect(authRepo.currentProfile, isNull);
+    });
+
+    test('Mobile Sign In creates authenticated trader profile and persists', () async {
+      final user = await authRepo.signInWithMobile(
+        mobile: '9876543210',
+        password: 'password',
+      );
+
+      expect(authRepo.isAuthenticated, isTrue);
+      expect(user.phone, '+91 9876543210');
+      expect(user.displayName, contains('9876543210'));
+
+      final restoredRepo = AuthRepository(storage);
+      expect(restoredRepo.isAuthenticated, isTrue);
+      expect(restoredRepo.currentProfile?.phone, '+91 9876543210');
+      restoredRepo.dispose();
     });
 
     test('Google Sign In creates authenticated Gmail profile with credentials', () async {
@@ -57,7 +73,7 @@ void main() {
     });
 
     test('Sign out clears user session and local storage', () async {
-      await authRepo.signInWithGoogle();
+      await authRepo.signInWithMobile(mobile: '9876543210', password: 'password');
       expect(authRepo.isAuthenticated, isTrue);
 
       await authRepo.signOut();
@@ -69,7 +85,7 @@ void main() {
       newRepo.dispose();
     });
 
-    test('UserProfile formats Google displayTitle and initials properly', () {
+    test('UserProfile formats displayTitle and initials properly', () {
       const googleUser = UserProfile(
         id: 'google_123',
         displayName: 'Sahil Patil',
@@ -83,14 +99,13 @@ void main() {
       expect(googleUser.isGoogle, isTrue);
       expect(googleUser.formattedJoinedDate, isNotEmpty);
 
-      const emailOnlyUser = UserProfile(
-        id: 'google_456',
-        email: 'trader.pro@gmail.com',
-        provider: 'google',
+      const mobileUser = UserProfile(
+        id: 'trader_9876543210',
+        phone: '+91 9876543210',
+        provider: 'mobile',
       );
-      expect(emailOnlyUser.displayTitle, 'trader.pro@gmail.com');
-      expect(emailOnlyUser.initials, 'T');
-      expect(emailOnlyUser.isGoogle, isTrue);
+      expect(mobileUser.displayTitle, '+91 9876543210');
+      expect(mobileUser.initials, '+9');
     });
 
     test('DefaultFirebaseOptions provides platform-specific options', () {

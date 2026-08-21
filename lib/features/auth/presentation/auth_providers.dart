@@ -19,6 +19,13 @@ class AuthNotifier extends StateNotifier<UserProfile?> {
     });
   }
 
+  Future<void> signInMobile({
+    required String mobile,
+    required String password,
+  }) async {
+    await _repo.signInWithMobile(mobile: mobile, password: password);
+  }
+
   Future<void> signInDemo() async {
     await _repo.signInDemoUser();
   }
@@ -28,7 +35,8 @@ class AuthNotifier extends StateNotifier<UserProfile?> {
   }
 }
 
-final authStateProvider = StateNotifierProvider<AuthNotifier, UserProfile?>((ref) {
+final authStateProvider =
+    StateNotifierProvider<AuthNotifier, UserProfile?>((ref) {
   final repo = ref.watch(authRepositoryProvider);
   return AuthNotifier(repo);
 });
@@ -61,6 +69,35 @@ class AuthController extends StateNotifier<AuthControllerState> {
 
   void clearError() {
     state = state.copyWith(clearError: true);
+  }
+
+  Future<bool> signInWithMobile({
+    required String mobile,
+    required String password,
+  }) async {
+    final clean = mobile.replaceAll(RegExp(r'\s+'), '');
+    if (clean.length != 10) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Enter a valid 10-digit mobile number',
+      );
+      return false;
+    }
+
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      // Simulate real auth network turn
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      await _repo.signInWithMobile(mobile: clean, password: password);
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: e.toString().replaceAll('Exception:', '').trim(),
+      );
+      return false;
+    }
   }
 
   Future<bool> signInWithGoogle() async {

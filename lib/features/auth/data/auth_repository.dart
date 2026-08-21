@@ -64,6 +64,30 @@ class AuthRepository {
     );
   }
 
+  // ==================== MOBILE & PASSWORD SIGN IN ====================
+
+  Future<UserProfile> signInWithMobile({
+    required String mobile,
+    required String password,
+  }) async {
+    final clean = mobile.replaceAll(RegExp(r'\s+'), '');
+    final profile = UserProfile(
+      id: 'trader_$clean',
+      phone: '+91 $clean',
+      displayName: 'Trader +91 $clean',
+      email: '$clean@021trade.in',
+      provider: 'mobile',
+      createdAt: DateTime.now(),
+      lastSignInAt: DateTime.now(),
+      isDemo: false,
+    );
+
+    _currentProfile = profile;
+    await _storage.saveAuthProfile(profile);
+    _authStreamController.add(profile);
+    return profile;
+  }
+
   // ==================== GOOGLE SIGN IN ====================
 
   Future<UserProfile> signInWithGoogle() async {
