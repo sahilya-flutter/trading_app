@@ -4,90 +4,45 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import 'auth_providers.dart';
-import 'widgets/otp_verification_sheet.dart';
 
-class LoginScreen extends ConsumerStatefulWidget {
+class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
-  @override
-  ConsumerState<LoginScreen> createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final TextEditingController _phoneController = TextEditingController();
-
-  @override
-  void dispose() {
-    _phoneController.dispose();
-    super.dispose();
-  }
-
-  void _onSendOtp() async {
-    final phone = _phoneController.text.trim();
-    if (phone.isEmpty || phone.length < 10) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a valid 10-digit mobile number'),
-          backgroundColor: AppColors.loss,
-        ),
-      );
-      return;
-    }
-
-    final success = await ref
-        .read(authControllerProvider.notifier)
-        .sendPhoneOtp(phone);
-
-    if (success && mounted) {
-      showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (_) => OtpVerificationSheet(
-          phone: '+91 $phone',
-          onSuccess: () {
-            context.go('/market');
-          },
-        ),
-      );
-    }
-  }
-
-  void _onGoogleSignIn() async {
+  void _onGoogleSignIn(BuildContext context, WidgetRef ref) async {
     final success =
         await ref.read(authControllerProvider.notifier).signInWithGoogle();
-    if (success && mounted) {
+    if (success && context.mounted) {
       context.go('/market');
     }
   }
 
-  void _onDemoLogin() async {
+  void _onDemoLogin(BuildContext context, WidgetRef ref) async {
     final success =
         await ref.read(authControllerProvider.notifier).signInDemo();
-    if (success && mounted) {
+    if (success && context.mounted) {
       context.go('/market');
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authControllerProvider);
 
     return Scaffold(
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 24.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
-                // App Brand Logo & Icon
+                // Glowing App Icon
                 Center(
                   child: Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(22),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [AppColors.primary, AppColors.primaryDark],
@@ -98,191 +53,154 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       boxShadow: [
                         BoxShadow(
                           color: AppColors.primary.withValues(alpha: 0.4),
-                          blurRadius: 20,
-                          spreadRadius: 2,
+                          blurRadius: 28,
+                          spreadRadius: 4,
                         ),
                       ],
                     ),
                     child: const Icon(
                       Icons.trending_up,
-                      size: 48,
+                      size: 54,
                       color: Colors.white,
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 28),
 
-                // App Title
+                // App Brand Name & Subtitle
                 Text(
                   '021 Trading App',
                   style: AppTextStyles.headingLarge.copyWith(
                     fontWeight: FontWeight.w800,
                     letterSpacing: -0.5,
+                    fontSize: 28,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Text(
                   'Realtime Indian Stock Market Simulator',
-                  style: AppTextStyles.bodyMedium,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                   textAlign: TextAlign.center,
                 ),
 
                 const SizedBox(height: 36),
 
-                // Mobile OTP Card
+                // Feature Highlights Card
                 Container(
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceElevated,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.border),
                   ),
-                  padding: const EdgeInsets.all(20),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        'Mobile Number Login',
-                        style: AppTextStyles.labelLarge,
+                      _buildFeatureRow(
+                        icon: Icons.flash_on,
+                        iconColor: Colors.amber,
+                        title: 'Live Realtime Market Feed',
+                        subtitle: '10 Universe stocks with micro-flash ticks',
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'We will send a 6-digit OTP to verify your account',
-                        style: AppTextStyles.bodySmall,
+                      const Divider(height: 24),
+                      _buildFeatureRow(
+                        icon: Icons.security,
+                        iconColor: AppColors.gain,
+                        title: 'Zero Precision Errors',
+                        subtitle: 'Precise financial integer-paise math',
                       ),
-                      const SizedBox(height: 16),
-
-                      // Mobile Input with +91 prefix
-                      TextField(
-                        controller: _phoneController,
-                        keyboardType: TextInputType.phone,
-                        maxLength: 10,
-                        style: AppTextStyles.monoNumbersLarge,
-                        decoration: InputDecoration(
-                          hintText: '9876543210',
-                          counterText: '',
-                          prefixIcon: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            margin: const EdgeInsets.only(right: 8),
-                            decoration: const BoxDecoration(
-                              border: Border(
-                                right: BorderSide(color: AppColors.border),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text('🇮🇳', style: TextStyle(fontSize: 18)),
-                                const SizedBox(width: 6),
-                                Text(
-                                  '+91',
-                                  style: AppTextStyles.labelLarge.copyWith(
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                      ),
-
-                      if (authState.errorMessage != null) ...[
-                        const SizedBox(height: 10),
-                        Text(
-                          authState.errorMessage!,
-                          style: const TextStyle(color: AppColors.loss, fontSize: 12),
-                        ),
-                      ],
-
-                      const SizedBox(height: 16),
-
-                      ElevatedButton(
-                        onPressed: authState.isLoading ? null : _onSendOtp,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: authState.isLoading
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text(
-                                'Get OTP',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
+                      const Divider(height: 24),
+                      _buildFeatureRow(
+                        icon: Icons.account_balance_wallet_outlined,
+                        iconColor: AppColors.primaryLight,
+                        title: 'Virtual Paper Portfolio',
+                        subtitle: '₹1,00,000 simulated starting capital',
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 36),
 
-                // Divider OR
-                Row(
-                  children: [
-                    const Expanded(child: Divider()),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Text(
-                        'OR CONTINUE WITH',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textMuted,
-                        ),
-                      ),
+                // Error Message if any
+                if (authState.errorMessage != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.lossBg,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppColors.lossBorder),
                     ),
-                    const Expanded(child: Divider()),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                // Google Sign In Button
-                OutlinedButton.icon(
-                  onPressed: authState.isLoading ? null : _onGoogleSignIn,
-                  icon: const Icon(
-                    Icons.g_mobiledata,
-                    size: 28,
-                    color: Colors.white,
-                  ),
-                  label: const Text(
-                    'Sign in with Google (Gmail)',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                    child: Text(
+                      authState.errorMessage!,
+                      style: const TextStyle(color: AppColors.loss, fontSize: 13),
+                      textAlign: TextAlign.center,
                     ),
                   ),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    side: const BorderSide(color: AppColors.border),
+                ],
+
+                // Hero: Continue with Google (Gmail) Button
+                ElevatedButton(
+                  onPressed: authState.isLoading
+                      ? null
+                      : () => _onGoogleSignIn(context, ref),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black87,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 2,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    backgroundColor: AppColors.surface,
                   ),
+                  child: authState.isLoading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                              ),
+                              child: const Icon(
+                                Icons.g_mobiledata,
+                                size: 28,
+                                color: Color(0xFF4285F4),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Continue with Google (Gmail)',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
 
-                // Demo Login Button
-                TextButton.icon(
-                  onPressed: authState.isLoading ? null : _onDemoLogin,
+                // Secondary: Quick Demo Trader Login
+                OutlinedButton.icon(
+                  onPressed: authState.isLoading
+                      ? null
+                      : () => _onDemoLogin(context, ref),
                   icon: const Icon(
                     Icons.bolt,
                     color: Colors.amber,
@@ -296,28 +214,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       fontSize: 14,
                     ),
                   ),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    backgroundColor: Colors.amber.withValues(alpha: 0.1),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    backgroundColor: Colors.amber.withValues(alpha: 0.08),
+                    side: BorderSide(color: Colors.amber.withValues(alpha: 0.3)),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(color: Colors.amber.withValues(alpha: 0.3)),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 28),
+                const SizedBox(height: 32),
 
-                // Supabase security footer note
+                // Supabase security footer
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.lock_outline, size: 14, color: AppColors.textMuted),
+                    const Icon(
+                      Icons.lock_outline,
+                      size: 14,
+                      color: AppColors.textMuted,
+                    ),
                     const SizedBox(width: 6),
                     Text(
-                      'Secured by Supabase Auth',
+                      'Secured by Supabase Auth & Google OAuth',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textMuted,
+                        fontSize: 12,
                       ),
                     ),
                   ],
@@ -327,6 +250,50 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildFeatureRow({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+  }) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: iconColor.withValues(alpha: 0.15),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: 20, color: iconColor),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

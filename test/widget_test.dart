@@ -24,8 +24,7 @@ void main() {
 
     // 1. Unauthenticated user lands on Login Screen
     expect(find.text('021 Trading App'), findsOneWidget);
-    expect(find.text('Mobile Number Login'), findsOneWidget);
-    expect(find.text('Sign in with Google (Gmail)'), findsOneWidget);
+    expect(find.text('Continue with Google (Gmail)'), findsOneWidget);
     expect(find.text('Quick Demo Trader Login'), findsOneWidget);
 
     // 2. Perform Quick Demo Login
