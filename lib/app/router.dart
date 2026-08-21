@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../app/theme/app_colors.dart';
 import '../features/auth/domain/user_profile.dart';
 import '../features/auth/presentation/auth_providers.dart';
 import '../features/auth/presentation/login_screen.dart';
@@ -112,18 +111,18 @@ class ScaffoldWithBottomNav extends StatelessWidget {
 
   int _calculateSelectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
-    if (location.startsWith('/watchlist')) return 1;
+    if (location.startsWith('/market')) return 1;
     if (location.startsWith('/holdings')) return 2;
-    return 0;
+    return 0; // default to Watchlist
   }
 
   void _onItemTapped(int index, BuildContext context) {
     switch (index) {
       case 0:
-        context.go('/market');
+        context.go('/watchlist');
         break;
       case 1:
-        context.go('/watchlist');
+        context.go('/market');
         break;
       case 2:
         context.go('/holdings');
@@ -134,30 +133,49 @@ class ScaffoldWithBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selectedIndex = _calculateSelectedIndex(context);
+    const accentBlue = Color(0xFF1F4FD8);
+    const inactiveColor = Color(0xFF64748B);
 
     return Scaffold(
       body: child,
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: AppColors.border, width: 1)),
+          color: Colors.white,
+          border: Border(top: BorderSide(color: Color(0xFFF1F5F9), width: 1)),
         ),
         child: BottomNavigationBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
           currentIndex: selectedIndex,
           onTap: (index) => _onItemTapped(index, context),
+          selectedItemColor: accentBlue,
+          unselectedItemColor: inactiveColor,
+          selectedLabelStyle: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: accentBlue,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: inactiveColor,
+          ),
+          type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.show_chart),
-              activeIcon: Icon(Icons.show_chart, color: AppColors.primaryLight),
-              label: 'Market',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.bookmark_outline),
-              activeIcon: Icon(Icons.bookmark, color: AppColors.primaryLight),
+              icon: Icon(Icons.featured_play_list_outlined),
+              activeIcon: Icon(Icons.featured_play_list, color: accentBlue),
               label: 'Watchlist',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.pie_chart_outline),
-              activeIcon: Icon(Icons.pie_chart, color: AppColors.primaryLight),
+              icon: Icon(Icons.trending_up),
+              activeIcon: Icon(Icons.trending_up, color: accentBlue),
+              label: 'Market',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.account_balance_wallet_outlined),
+              activeIcon:
+                  Icon(Icons.account_balance_wallet, color: accentBlue),
               label: 'Holdings',
             ),
           ],

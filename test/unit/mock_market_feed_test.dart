@@ -25,8 +25,8 @@ void main() {
     });
 
     test('Starting price matches StockConstants for RELIANCE and TCS', () {
-      expect(feed.getLtpPaise('RELIANCE'), 142000);
-      expect(feed.getLtpPaise('TCS'), 398000);
+      expect(feed.getLtpPaise('RELIANCE'), 298745);
+      expect(feed.getLtpPaise('TCS'), 389210);
     });
 
     test('Emits ticks when started and stress mode can be toggled', () async {

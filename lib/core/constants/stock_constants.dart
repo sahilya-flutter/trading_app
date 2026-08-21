@@ -7,38 +7,38 @@ class StockConstants {
     Stock(
       symbol: 'RELIANCE',
       companyName: 'Reliance Industries Ltd.',
-      startingPricePaise: 142000,
-      previousClosePaise: 141500, // UP (Green)
+      startingPricePaise: 298745,
+      previousClosePaise: 295325, // UP +34.20 (+1.16%)
     ),
     Stock(
       symbol: 'TCS',
       companyName: 'Tata Consultancy Services',
-      startingPricePaise: 398000,
-      previousClosePaise: 396500, // UP (Green)
+      startingPricePaise: 389210,
+      previousClosePaise: 387960, // UP +12.50 (+0.32%)
     ),
     Stock(
       symbol: 'HDFCBANK',
       companyName: 'HDFC Bank Limited',
-      startingPricePaise: 176000,
-      previousClosePaise: 175400, // UP (Green)
+      startingPricePaise: 164385,
+      previousClosePaise: 163495, // UP +8.90 (+0.54%)
     ),
     Stock(
       symbol: 'INFY',
       companyName: 'Infosys Limited',
-      startingPricePaise: 171200,
-      previousClosePaise: 172000, // DOWN (Red)
+      startingPricePaise: 145620,
+      previousClosePaise: 147160, // DOWN -15.40 (-1.05%)
     ),
     Stock(
       symbol: 'SBIN',
       companyName: 'State Bank of India',
-      startingPricePaise: 82000,
-      previousClosePaise: 82500, // DOWN (Red)
+      startingPricePaise: 75430,
+      previousClosePaise: 75740, // DOWN -3.10 (-0.41%)
     ),
     Stock(
       symbol: 'ITC',
       companyName: 'ITC Limited',
-      startingPricePaise: 46800,
-      previousClosePaise: 47000, // DOWN (Red)
+      startingPricePaise: 43215,
+      previousClosePaise: 43395, // DOWN -1.80 (-0.41%)
     ),
     Stock(
       symbol: 'ICICIBANK',

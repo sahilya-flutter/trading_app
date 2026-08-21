@@ -34,89 +34,102 @@ class WatchlistRow extends ConsumerWidget {
         ? const Color(0xFF16A34A) // Green if up
         : const Color(0xFFDC2626); // Red if down
 
-    final formattedChange =
-        '${MoneyFormatter.formatPaiseWithSign(changePaise)} (${MoneyFormatter.formatPercent(changePercent)})';
+    final arrow = isPositive ? '↑' : '↓';
+    final sign = isPositive ? '+' : '-';
+    final changeValStr =
+        MoneyFormatter.formatPaise(changePaise.abs()).replaceAll('₹', '');
+    final percentStr = MoneyFormatter.formatPercent(changePercent.abs());
+    final formattedChange = '$arrow $sign$changeValStr ($sign$percentStr)';
+
+    final priceStr = MoneyFormatter.formatPaise(ltpPaise).replaceAll('₹', '');
 
     return Material(
       color: Colors.white,
       child: InkWell(
         onTap: onTap,
-        child: SizedBox(
+        child: Container(
           height: 64,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                // Faint grey drag-handle icon (six dots) on far left
-                ReorderableDragStartListener(
-                  index: index,
-                  child: const Padding(
-                    padding: EdgeInsets.only(right: 12),
-                    child: Icon(
-                      Icons.drag_indicator,
-                      color: Color(0xFFC4C8D0), // Faint grey
-                      size: 20,
-                    ),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              // Faint grey drag-handle icon (six dots) on far left
+              ReorderableDragStartListener(
+                index: index,
+                child: const Padding(
+                  padding: EdgeInsets.only(right: 12),
+                  child: Icon(
+                    Icons.drag_indicator,
+                    color: Color(0xFFCBD5E1), // Faint grey 6-dots
+                    size: 20,
                   ),
                 ),
+              ),
 
-                // Symbol in 15 semibold, with tiny grey "NSE" label under it
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        symbol,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF111827),
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      const Text(
-                        'NSE',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF8E95A2),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Price in 15 semibold (tabular figures), and absolute & % change on one line
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
+              // Symbol in 16 semibold with NSE badge right next to it
+              Expanded(
+                child: Row(
                   children: [
                     Text(
-                      MoneyFormatter.formatPaise(ltpPaise),
+                      symbol,
                       style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF111827),
-                        fontFeatures: [FontFeature.tabularFigures()],
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0E1621),
                         letterSpacing: -0.2,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      formattedChange,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: changeColor,
-                        fontFeatures: const [FontFeature.tabularFigures()],
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE2E8F0),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'NSE',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF64748B),
+                          letterSpacing: 0.2,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+
+              // Price in 16 semibold (tabular figures), and absolute & % change on one line with arrow
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    priceStr,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0E1621),
+                      fontFeatures: [FontFeature.tabularFigures()],
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    formattedChange,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: changeColor,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
