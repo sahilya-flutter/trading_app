@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/constants/app_constants.dart';
+import '../features/auth/domain/user_profile.dart';
 import '../features/holdings/domain/holding.dart';
 import '../features/order/domain/order_model.dart';
 import '../features/wallet/domain/wallet_model.dart';
@@ -173,5 +174,38 @@ class LocalStorageService {
       debugPrint('Error saving orders: $e');
       return false;
     }
+  }
+
+  // ==================== AUTH PROFILE ====================
+
+  UserProfile? loadAuthProfile() {
+    try {
+      final raw = _prefs.getString(StorageKeys.authProfile);
+      if (raw != null && raw.isNotEmpty) {
+        final decoded = jsonDecode(raw);
+        if (decoded is Map<String, dynamic>) {
+          return UserProfile.fromJson(decoded);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading auth profile: $e');
+    }
+    return null;
+  }
+
+  Future<bool> saveAuthProfile(UserProfile profile) async {
+    try {
+      return await _prefs.setString(
+        StorageKeys.authProfile,
+        jsonEncode(profile.toJson()),
+      );
+    } catch (e) {
+      debugPrint('Error saving auth profile: $e');
+      return false;
+    }
+  }
+
+  Future<bool> clearAuthProfile() async {
+    return await _prefs.remove(StorageKeys.authProfile);
   }
 }

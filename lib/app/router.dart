@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../app/theme/app_colors.dart';
+import '../features/auth/domain/user_profile.dart';
+import '../features/auth/presentation/auth_providers.dart';
+import '../features/auth/presentation/login_screen.dart';
 import '../features/holdings/presentation/holdings_screen.dart';
 import '../features/market/presentation/market_screen.dart';
 import '../features/order/domain/order_model.dart';
@@ -11,57 +15,89 @@ import '../features/watchlist/presentation/watchlist_screen.dart';
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
 
-final appRouter = GoRouter(
-  navigatorKey: _rootNavigatorKey,
-  initialLocation: '/market',
-  routes: [
-    ShellRoute(
-      navigatorKey: _shellNavigatorKey,
-      builder: (context, state, child) {
-        return ScaffoldWithBottomNav(child: child);
-      },
-      routes: [
-        GoRoute(
-          path: '/market',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: MarketScreen(),
+class AuthRouterListenable extends ChangeNotifier {
+  AuthRouterListenable(Ref ref) {
+    ref.listen<UserProfile?>(authStateProvider, (prev, next) {
+      notifyListeners();
+    });
+  }
+}
+
+final routerProvider = Provider<GoRouter>((ref) {
+  final authListenable = AuthRouterListenable(ref);
+
+  return GoRouter(
+    navigatorKey: _rootNavigatorKey,
+    initialLocation: '/market',
+    refreshListenable: authListenable,
+    redirect: (context, state) {
+      final user = ref.read(authStateProvider);
+      final isLoggingIn = state.uri.path == '/login';
+
+      if (user == null && !isLoggingIn) {
+        return '/login';
+      }
+
+      if (user != null && isLoggingIn) {
+        return '/market';
+      }
+
+      return null;
+    },
+    routes: [
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/login',
+        builder: (context, state) => const LoginScreen(),
+      ),
+      ShellRoute(
+        navigatorKey: _shellNavigatorKey,
+        builder: (context, state, child) {
+          return ScaffoldWithBottomNav(child: child);
+        },
+        routes: [
+          GoRoute(
+            path: '/market',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: MarketScreen(),
+            ),
           ),
-        ),
-        GoRoute(
-          path: '/watchlist',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: WatchlistScreen(),
+          GoRoute(
+            path: '/watchlist',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: WatchlistScreen(),
+            ),
           ),
-        ),
-        GoRoute(
-          path: '/holdings',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: HoldingsScreen(),
+          GoRoute(
+            path: '/holdings',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: HoldingsScreen(),
+            ),
           ),
-        ),
-      ],
-    ),
-    GoRoute(
-      parentNavigatorKey: _rootNavigatorKey,
-      path: '/order',
-      builder: (context, state) {
-        final symbol = state.uri.queryParameters['symbol'] ?? 'RELIANCE';
-        return OrderTicketScreen(symbol: symbol);
-      },
-    ),
-    GoRoute(
-      parentNavigatorKey: _rootNavigatorKey,
-      path: '/order/confirmation',
-      builder: (context, state) {
-        final order = state.extra as OrderModel?;
-        if (order == null) {
-          return const MarketScreen();
-        }
-        return OrderConfirmationScreen(order: order);
-      },
-    ),
-  ],
-);
+        ],
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/order',
+        builder: (context, state) {
+          final symbol = state.uri.queryParameters['symbol'] ?? 'RELIANCE';
+          return OrderTicketScreen(symbol: symbol);
+        },
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/order/confirmation',
+        builder: (context, state) {
+          final order = state.extra as OrderModel?;
+          if (order == null) {
+            return const MarketScreen();
+          }
+          return OrderConfirmationScreen(order: order);
+        },
+      ),
+    ],
+  );
+});
 
 class ScaffoldWithBottomNav extends StatelessWidget {
   final Widget child;

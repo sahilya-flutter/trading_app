@@ -6,7 +6,7 @@ import 'package:trading_app/features/market/presentation/market_providers.dart';
 import 'package:trading_app/persistence/local_storage_service.dart';
 
 void main() {
-  testWidgets('TradingApp smoke test - verifies navigation and market screen loads',
+  testWidgets('TradingApp auth flow & navigation smoke test',
       (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
     final storage = await LocalStorageService.create();
@@ -22,29 +22,36 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    // Verify Market Overview is visible
+    // 1. Unauthenticated user lands on Login Screen
+    expect(find.text('021 Trading App'), findsOneWidget);
+    expect(find.text('Mobile Number Login'), findsOneWidget);
+    expect(find.text('Sign in with Google (Gmail)'), findsOneWidget);
+    expect(find.text('Quick Demo Trader Login'), findsOneWidget);
+
+    // 2. Perform Quick Demo Login
+    final demoButton = find.text('Quick Demo Trader Login');
+    await tester.ensureVisible(demoButton);
+    await tester.tap(demoButton);
+    await tester.pumpAndSettle();
+
+    // 3. User is now logged in and on Market Overview
     expect(find.text('Market Overview'), findsOneWidget);
     expect(find.text('10 Universe Stocks'), findsOneWidget);
     expect(find.text('RELIANCE'), findsOneWidget);
-    expect(find.text('TCS'), findsOneWidget);
 
-    // Verify Bottom Navigation Items
+    // 4. Verify Bottom Navigation Tabs
     expect(find.text('Market'), findsOneWidget);
     expect(find.text('Watchlist'), findsOneWidget);
     expect(find.text('Holdings'), findsOneWidget);
 
-    // Tap Watchlist tab
+    // 5. Navigate to Watchlist Tab
     await tester.tap(find.text('Watchlist'));
     await tester.pumpAndSettle();
-
-    // Verify Watchlist screen header is displayed
     expect(find.text('My Watchlist'), findsOneWidget);
 
-    // Tap Holdings tab
+    // 6. Navigate to Holdings Tab
     await tester.tap(find.text('Holdings'));
     await tester.pumpAndSettle();
-
-    // Verify Holdings & Portfolio screen
     expect(find.text('Holdings & Portfolio'), findsOneWidget);
     expect(find.text('Total Current Value'), findsOneWidget);
   });

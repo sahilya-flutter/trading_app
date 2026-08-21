@@ -6,4 +6,5 @@ class StorageKeys {
   static const String wallet = 'trading_app_wallet';
   static const String holdings = 'trading_app_holdings';
   static const String orders = 'trading_app_orders';
+  static const String authProfile = 'trading_app_auth_profile';
 }
