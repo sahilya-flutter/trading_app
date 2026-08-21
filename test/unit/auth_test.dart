@@ -1,13 +1,12 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:trading_app/core/config/supabase_config.dart';
 import 'package:trading_app/features/auth/data/auth_repository.dart';
 import 'package:trading_app/features/auth/domain/user_profile.dart';
+import 'package:trading_app/firebase_options.dart';
 import 'package:trading_app/persistence/local_storage_service.dart';
 
 void main() {
-  group('Auth & Gmail / Google Login Tests', () {
+  group('Auth & Firebase Google Login Tests', () {
     late LocalStorageService storage;
     late AuthRepository authRepo;
 
@@ -94,15 +93,15 @@ void main() {
       expect(emailOnlyUser.isGoogle, isTrue);
     });
 
-    test('SupabaseConfig loads environment variables from dotenv accurately', () {
-      dotenv.testLoad(fileInput: '''
-SUPABASE_URL=https://custom-test.supabase.co
-SUPABASE_ANON_KEY=test_anon_key_12345
-''');
+    test('DefaultFirebaseOptions provides platform-specific options', () {
+      final androidOptions = DefaultFirebaseOptions.android;
+      expect(androidOptions.apiKey, isNotEmpty);
+      expect(androidOptions.appId, isNotEmpty);
+      expect(androidOptions.projectId, isNotEmpty);
 
-      expect(SupabaseConfig.supabaseUrl, 'https://custom-test.supabase.co');
-      expect(SupabaseConfig.supabaseAnonKey, 'test_anon_key_12345');
-      expect(SupabaseConfig.isConfigured, isTrue);
+      final webOptions = DefaultFirebaseOptions.web;
+      expect(webOptions.apiKey, isNotEmpty);
+      expect(webOptions.projectId, isNotEmpty);
     });
   });
 }

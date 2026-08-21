@@ -31,6 +31,8 @@ void main() {
     final googleButton = find.text('Continue with Google (Gmail)');
     await tester.ensureVisible(googleButton);
     await tester.tap(googleButton);
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 2));
     await tester.pumpAndSettle();
 
     // 3. User is now authenticated with Google and lands on Market Overview

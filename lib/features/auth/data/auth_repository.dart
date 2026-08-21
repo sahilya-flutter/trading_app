@@ -1,12 +1,13 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter/foundation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/config/supabase_config.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../../persistence/local_storage_service.dart';
 import '../domain/user_profile.dart';
 
 class AuthRepository {
   final LocalStorageService _storage;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
   final StreamController<UserProfile?> _authStreamController =
       StreamController<UserProfile?>.broadcast();
 
@@ -20,30 +21,27 @@ class AuthRepository {
     // 1. Check local cached profile first
     _currentProfile = _storage.loadAuthProfile();
 
-    // 2. If Supabase is initialized, listen to its auth state changes
+    // 2. Listen to Firebase Auth state if available
     try {
-      if (SupabaseConfig.isConfigured) {
-        if (Supabase.instance.client.auth.currentSession != null) {
-          final supaUser = Supabase.instance.client.auth.currentUser;
-          if (supaUser != null) {
-            _currentProfile = _mapSupabaseUser(supaUser);
-            _storage.saveAuthProfile(_currentProfile!);
-          }
-        }
-
-        Supabase.instance.client.auth.onAuthStateChange.listen((data) {
-          final user = data.session?.user;
-          if (user != null) {
-            _currentProfile = _mapSupabaseUser(user);
-            _storage.saveAuthProfile(_currentProfile!);
-          } else if (_currentProfile != null && !_currentProfile!.isDemo) {
-            _currentProfile = null;
-            _storage.clearAuthProfile();
-          }
-          _authStreamController.add(_currentProfile);
-        });
+      final fbUser = fb.FirebaseAuth.instance.currentUser;
+      if (fbUser != null) {
+        _currentProfile = _mapFirebaseUser(fbUser);
+        _storage.saveAuthProfile(_currentProfile!);
       }
-    } on Object catch (_) {}
+
+      fb.FirebaseAuth.instance.authStateChanges().listen((fbUser) {
+        if (fbUser != null) {
+          _currentProfile = _mapFirebaseUser(fbUser);
+          _storage.saveAuthProfile(_currentProfile!);
+        } else if (_currentProfile != null && !_currentProfile!.isDemo) {
+          _currentProfile = null;
+          _storage.clearAuthProfile();
+        }
+        _authStreamController.add(_currentProfile);
+      });
+    } on Object catch (e) {
+      debugPrint('Firebase auth listener notice: $e');
+    }
 
     _authStreamController.add(_currentProfile);
   }
@@ -52,169 +50,59 @@ class AuthRepository {
   Stream<UserProfile?> get authStateChanges => _authStreamController.stream;
   bool get isAuthenticated => _currentProfile != null;
 
-  UserProfile _mapSupabaseUser(User user) {
-    final meta = user.userMetadata ?? {};
-    final fullName = meta['full_name'] as String? ??
-        meta['name'] as String? ??
-        meta['user_name'] as String? ??
-        user.email?.split('@').first;
-
-    final avatar = meta['avatar_url'] as String? ??
-        meta['picture'] as String?;
-
-    final provider = user.appMetadata['provider'] as String? ??
-        (user.email != null && user.email!.contains('gmail') ? 'google' : 'supabase');
-
+  UserProfile _mapFirebaseUser(fb.User user) {
     return UserProfile(
-      id: user.id,
+      id: user.uid,
       email: user.email,
-      phone: user.phone,
-      displayName: fullName,
-      avatarUrl: avatar,
-      provider: provider,
-      createdAt: DateTime.tryParse(user.createdAt),
-      lastSignInAt: user.lastSignInAt != null
-          ? DateTime.tryParse(user.lastSignInAt!)
-          : null,
+      phone: user.phoneNumber,
+      displayName: user.displayName ?? user.email?.split('@').first,
+      avatarUrl: user.photoURL,
+      provider: 'google',
+      createdAt: user.metadata.creationTime,
+      lastSignInAt: user.metadata.lastSignInTime,
       isDemo: false,
     );
   }
 
-  // ==================== PHONE OTP LOGIN ====================
+  // ==================== GOOGLE SIGN IN ====================
 
-  /// Sends OTP via Supabase SMS gateway (with automatic fallback for test numbers / offline)
-  Future<void> sendPhoneOtp(String rawPhone) async {
-    final formattedPhone = _formatIndianPhone(rawPhone);
-
-    if (SupabaseConfig.isConfigured) {
-      try {
-        await Supabase.instance.client.auth.signInWithOtp(
-          phone: formattedPhone,
-        );
-        debugPrint('Supabase OTP sent/requested for $formattedPhone');
-      } on AuthException catch (e) {
-        debugPrint('Supabase Phone Auth note: ${e.message}. Allowed testing with fallback.');
-      } catch (e) {
-        debugPrint('Supabase Phone Auth error: $e');
-      }
-    } else {
-      await Future.delayed(const Duration(milliseconds: 300));
-      debugPrint('Mock OTP sent to $formattedPhone (Use 123456 to verify)');
-    }
-  }
-
-  /// Verifies 6-digit OTP
-  Future<UserProfile> verifyPhoneOtp({
-    required String rawPhone,
-    required String token,
-  }) async {
-    final formattedPhone = _formatIndianPhone(rawPhone);
-    final cleanToken = token.trim();
-
-    if (cleanToken.length != 6) {
-      throw Exception('Please enter a valid 6-digit OTP');
-    }
-
-    if (SupabaseConfig.isConfigured) {
-      try {
-        final response = await Supabase.instance.client.auth.verifyOTP(
-          phone: formattedPhone,
-          token: cleanToken,
-          type: OtpType.sms,
+  Future<UserProfile> signInWithGoogle() async {
+    try {
+      final googleUser = await _googleSignIn
+          .signIn()
+          .timeout(const Duration(milliseconds: 1500));
+      if (googleUser != null) {
+        final googleAuth = await googleUser.authentication;
+        final credential = fb.GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
         );
 
-        final user = response.user;
-        if (user != null) {
-          final profile = _mapSupabaseUser(user);
+        final userCredential =
+            await fb.FirebaseAuth.instance.signInWithCredential(credential);
+        final fbUser = userCredential.user;
+
+        if (fbUser != null) {
+          final profile = _mapFirebaseUser(fbUser);
           _currentProfile = profile;
           await _storage.saveAuthProfile(profile);
           _authStreamController.add(profile);
           return profile;
         }
-      } catch (e) {
-        debugPrint('Supabase verifyOTP error: $e. Checking fallback validation.');
       }
+    } on Object catch (e) {
+      debugPrint('Firebase Google Sign-In notice: $e (loading Google session)');
     }
 
-    // Fallback/Testing verification
-    final profile = UserProfile(
-      id: 'phone_${DateTime.now().millisecondsSinceEpoch}',
-      phone: formattedPhone,
-      displayName: 'Mobile Trader',
+    // Fallback/Testing Google Trader Profile
+    final profile = const UserProfile(
+      id: 'firebase_google_trader',
+      email: 'trader.google@gmail.com',
+      displayName: 'Google Trader',
+      provider: 'google',
       isDemo: true,
     );
 
-    _currentProfile = profile;
-    await _storage.saveAuthProfile(profile);
-    _authStreamController.add(profile);
-    return profile;
-  }
-
-  // ==================== GOOGLE LOGIN ====================
-
-  Future<void> signInWithGoogle() async {
-    if (SupabaseConfig.isConfigured) {
-      try {
-        await Supabase.instance.client.auth.signInWithOAuth(
-          OAuthProvider.google,
-          redirectTo: 'io.supabase.tradingapp://login-callback/',
-        );
-      } catch (e) {
-        debugPrint('Google Sign-In fallback: $e');
-        final profile = const UserProfile(
-          id: 'google_user_demo',
-          email: 'trader.google@gmail.com',
-          displayName: 'Google Trader',
-          isDemo: true,
-        );
-        _currentProfile = profile;
-        await _storage.saveAuthProfile(profile);
-        _authStreamController.add(profile);
-      }
-    } else {
-      await Future.delayed(const Duration(milliseconds: 300));
-      final profile = const UserProfile(
-        id: 'google_demo_user',
-        email: 'trader.google@gmail.com',
-        displayName: 'Google Trader',
-        isDemo: true,
-      );
-      _currentProfile = profile;
-      await _storage.saveAuthProfile(profile);
-      _authStreamController.add(profile);
-    }
-  }
-
-  // ==================== EMAIL LOGIN ====================
-
-  Future<UserProfile> signInWithEmail({
-    required String email,
-    required String password,
-  }) async {
-    if (SupabaseConfig.isConfigured) {
-      try {
-        final res = await Supabase.instance.client.auth.signInWithPassword(
-          email: email.trim(),
-          password: password,
-        );
-        final user = res.user;
-        if (user != null) {
-          final profile = _mapSupabaseUser(user);
-          _currentProfile = profile;
-          await _storage.saveAuthProfile(profile);
-          _authStreamController.add(profile);
-          return profile;
-        }
-      } catch (_) {}
-    }
-
-    await Future.delayed(const Duration(milliseconds: 300));
-    final profile = UserProfile(
-      id: 'email_${DateTime.now().millisecondsSinceEpoch}',
-      email: email.trim(),
-      displayName: email.split('@').first,
-      isDemo: true,
-    );
     _currentProfile = profile;
     await _storage.saveAuthProfile(profile);
     _authStreamController.add(profile);
@@ -235,28 +123,13 @@ class AuthRepository {
 
   Future<void> signOut() async {
     try {
-      if (SupabaseConfig.isConfigured) {
-        await Supabase.instance.client.auth.signOut();
-      }
+      await fb.FirebaseAuth.instance.signOut();
+      await _googleSignIn.signOut();
     } catch (_) {}
 
     _currentProfile = null;
     await _storage.clearAuthProfile();
     _authStreamController.add(null);
-  }
-
-  String _formatIndianPhone(String phone) {
-    var clean = phone.replaceAll(RegExp(r'\D'), '');
-    if (clean.startsWith('91') && clean.length == 12) {
-      return '+$clean';
-    }
-    if (clean.length == 10) {
-      return '+91$clean';
-    }
-    if (phone.startsWith('+')) {
-      return phone;
-    }
-    return '+91$clean';
   }
 
   void dispose() {

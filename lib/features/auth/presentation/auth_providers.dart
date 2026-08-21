@@ -36,25 +36,20 @@ final authStateProvider = StateNotifierProvider<AuthNotifier, UserProfile?>((ref
 class AuthControllerState {
   final bool isLoading;
   final String? errorMessage;
-  final String? otpSentToPhone;
 
   const AuthControllerState({
     this.isLoading = false,
     this.errorMessage,
-    this.otpSentToPhone,
   });
 
   AuthControllerState copyWith({
     bool? isLoading,
     String? errorMessage,
-    String? otpSentToPhone,
     bool clearError = false,
-    bool clearPhone = false,
   }) {
     return AuthControllerState(
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
-      otpSentToPhone: clearPhone ? null : (otpSentToPhone ?? this.otpSentToPhone),
     );
   }
 }
@@ -66,50 +61,6 @@ class AuthController extends StateNotifier<AuthControllerState> {
 
   void clearError() {
     state = state.copyWith(clearError: true);
-  }
-
-  Future<bool> sendPhoneOtp(String phone) async {
-    final clean = phone.trim();
-    if (clean.isEmpty || clean.length < 10) {
-      state = state.copyWith(errorMessage: 'Please enter a valid 10-digit mobile number');
-      return false;
-    }
-
-    state = state.copyWith(isLoading: true, clearError: true);
-    try {
-      await _repo.sendPhoneOtp(clean);
-      state = state.copyWith(isLoading: false, otpSentToPhone: clean);
-      return true;
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString().replaceAll('Exception:', '').trim(),
-      );
-      return false;
-    }
-  }
-
-  Future<bool> verifyPhoneOtp({
-    required String phone,
-    required String token,
-  }) async {
-    if (token.trim().length != 6) {
-      state = state.copyWith(errorMessage: 'Please enter a 6-digit OTP code');
-      return false;
-    }
-
-    state = state.copyWith(isLoading: true, clearError: true);
-    try {
-      await _repo.verifyPhoneOtp(rawPhone: phone, token: token);
-      state = state.copyWith(isLoading: false, clearPhone: true);
-      return true;
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: e.toString().replaceAll('Exception:', '').trim(),
-      );
-      return false;
-    }
   }
 
   Future<bool> signInWithGoogle() async {

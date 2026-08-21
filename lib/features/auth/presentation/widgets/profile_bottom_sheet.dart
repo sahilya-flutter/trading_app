@@ -226,7 +226,7 @@ class ProfileBottomSheet extends ConsumerWidget {
                 const Divider(height: 16),
                 _buildInfoRow(
                   label: 'Auth Provider',
-                  value: profile.isGoogle ? 'Google (Supabase)' : 'Demo Session',
+                  value: profile.isGoogle ? 'Google (Firebase)' : 'Demo Session',
                 ),
                 const Divider(height: 16),
                 _buildInfoRow(

@@ -237,7 +237,7 @@ class LoginScreen extends ConsumerWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'Secured by Supabase Auth & Google OAuth',
+                      'Secured by Firebase Auth & Google Sign-In',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textMuted,
                         fontSize: 12,
