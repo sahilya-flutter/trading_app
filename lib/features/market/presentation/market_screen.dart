@@ -95,7 +95,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: InkWell(
-              onTap: () => ProfileBottomSheet.show(context, user),
+              onTap: () => context.push('/profile'),
               borderRadius: BorderRadius.circular(18),
               child: Container(
                 padding: const EdgeInsets.all(2),

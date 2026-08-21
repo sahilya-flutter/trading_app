@@ -10,6 +10,7 @@ import '../features/market/presentation/market_screen.dart';
 import '../features/order/domain/order_model.dart';
 import '../features/order/presentation/order_confirmation_screen.dart';
 import '../features/order/presentation/order_ticket_screen.dart';
+import '../features/profile/presentation/profile_screen.dart';
 import '../features/watchlist/presentation/watchlist_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -94,6 +95,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           }
           return OrderConfirmationScreen(order: order);
         },
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/profile',
+        builder: (context, state) => const ProfileScreen(),
       ),
     ],
   );

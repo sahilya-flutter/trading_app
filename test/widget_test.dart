@@ -7,7 +7,7 @@ import 'package:trading_app/features/market/presentation/market_providers.dart';
 import 'package:trading_app/persistence/local_storage_service.dart';
 
 void main() {
-  testWidgets('021 Trade Login flow, Profile Sheet, and Navigation test',
+  testWidgets('021 Trade Login flow, Profile Screen, and Navigation test',
       (WidgetTester tester) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.0;
@@ -52,17 +52,25 @@ void main() {
     expect(find.text('10 Universe Stocks'), findsOneWidget);
     expect(find.text('RELIANCE'), findsOneWidget);
 
-    // 4. Open Profile BottomSheet by tapping user avatar
+    // 4. Open Profile Screen by tapping user avatar in header
     final avatarFinder = find.byType(CircleAvatar).first;
     await tester.tap(avatarFinder);
     await tester.pumpAndSettle();
 
     // 5. Verify Profile details
-    expect(find.text('₹1,00,000.00'), findsOneWidget);
-    expect(find.text('Log Out from Account'), findsOneWidget);
+    expect(find.text('Profile'), findsOneWidget);
+    expect(find.text('Rahul Sharma'), findsOneWidget);
+    expect(find.text('₹9,64,487.50'), findsOneWidget);
+    expect(find.text('₹3,64,820.00'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, 'Log out'), findsOneWidget);
 
-    // 6. Tap Log Out and verify return to Login Screen
-    await tester.tap(find.text('Log Out from Account'));
+    // 6. Tap Log Out, confirm in dialog, and verify return to Login Screen
+    await tester.tap(find.widgetWithText(OutlinedButton, 'Log out'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Log out?'), findsOneWidget);
+    final confirmBtn = find.widgetWithText(ElevatedButton, 'Log out');
+    await tester.tap(confirmBtn);
     await tester.pumpAndSettle();
 
     expect(find.text('021 Trade'), findsOneWidget);
