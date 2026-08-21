@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,7 +7,7 @@ import 'package:trading_app/features/market/presentation/market_providers.dart';
 import 'package:trading_app/persistence/local_storage_service.dart';
 
 void main() {
-  testWidgets('TradingApp auth flow & navigation smoke test',
+  testWidgets('TradingApp Google login flow, Profile Sheet, and Navigation test',
       (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
     final storage = await LocalStorageService.create();
@@ -22,36 +23,38 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    // 1. Unauthenticated user lands on Login Screen
+    // 1. Unauthenticated user starts at Login Screen
     expect(find.text('021 Trading App'), findsOneWidget);
     expect(find.text('Continue with Google (Gmail)'), findsOneWidget);
-    expect(find.text('Quick Demo Trader Login'), findsOneWidget);
 
-    // 2. Perform Quick Demo Login
-    final demoButton = find.text('Quick Demo Trader Login');
-    await tester.ensureVisible(demoButton);
-    await tester.tap(demoButton);
+    // 2. Perform Google Sign In
+    final googleButton = find.text('Continue with Google (Gmail)');
+    await tester.ensureVisible(googleButton);
+    await tester.tap(googleButton);
     await tester.pumpAndSettle();
 
-    // 3. User is now logged in and on Market Overview
+    // 3. User is now authenticated with Google and lands on Market Overview
     expect(find.text('Market Overview'), findsOneWidget);
     expect(find.text('10 Universe Stocks'), findsOneWidget);
     expect(find.text('RELIANCE'), findsOneWidget);
 
-    // 4. Verify Bottom Navigation Tabs
-    expect(find.text('Market'), findsOneWidget);
-    expect(find.text('Watchlist'), findsOneWidget);
-    expect(find.text('Holdings'), findsOneWidget);
-
-    // 5. Navigate to Watchlist Tab
-    await tester.tap(find.text('Watchlist'));
+    // 4. Open Profile BottomSheet by tapping user avatar
+    final avatarFinder = find.byType(CircleAvatar).first;
+    await tester.tap(avatarFinder);
     await tester.pumpAndSettle();
-    expect(find.text('My Watchlist'), findsOneWidget);
 
-    // 6. Navigate to Holdings Tab
-    await tester.tap(find.text('Holdings'));
+    // 5. Verify Google Profile details in Profile BottomSheet
+    expect(find.text('Google Trader'), findsOneWidget);
+    expect(find.text('trader.google@gmail.com'), findsOneWidget);
+    expect(find.text('Google OAuth Authenticated'), findsOneWidget);
+    expect(find.text('₹1,00,000.00'), findsOneWidget);
+    expect(find.text('Log Out from Account'), findsOneWidget);
+
+    // 6. Tap Log Out and verify return to Login Screen
+    await tester.tap(find.text('Log Out from Account'));
     await tester.pumpAndSettle();
-    expect(find.text('Holdings & Portfolio'), findsOneWidget);
-    expect(find.text('Total Current Value'), findsOneWidget);
+
+    expect(find.text('021 Trading App'), findsOneWidget);
+    expect(find.text('Continue with Google (Gmail)'), findsOneWidget);
   });
 }
