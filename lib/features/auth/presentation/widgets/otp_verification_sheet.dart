@@ -150,6 +150,18 @@ class _OtpVerificationSheetState extends ConsumerState<OtpVerificationSheet> {
             },
           ),
 
+          const SizedBox(height: 8),
+          Center(
+            child: Text(
+              '💡 Dev Test Code: 123456',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: Colors.amber,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+
           // Error Message
           if (authState.errorMessage != null) ...[
             const SizedBox(height: 12),
