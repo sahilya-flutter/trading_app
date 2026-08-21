@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../auth/presentation/auth_providers.dart';
+import '../../auth/presentation/widgets/profile_bottom_sheet.dart';
 import 'market_providers.dart';
 import 'widgets/market_price_row.dart';
 
@@ -22,89 +23,6 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  void _showProfileDialog(BuildContext context, user) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surfaceElevated,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: AppColors.primary,
-              child: Text(
-                user?.initials ?? 'T',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    user?.displayName ?? 'Trader',
-                    style: AppTextStyles.labelLarge,
-                  ),
-                  Text(
-                    user?.email ?? user?.phone ?? 'Active Session',
-                    style: AppTextStyles.bodySmall,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (user?.isDemo == true)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.amber.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.bolt, color: Colors.amber, size: 16),
-                    SizedBox(width: 4),
-                    Text(
-                      'Demo Trading Account',
-                      style: TextStyle(color: Colors.amber, fontSize: 12, fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-              ),
-            const SizedBox(height: 12),
-            const Text(
-              'Supabase Auth Session Active',
-              style: TextStyle(color: AppColors.gain, fontSize: 12),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Close', style: TextStyle(color: AppColors.textMuted)),
-          ),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.loss),
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              ref.read(authControllerProvider.notifier).signOut();
-            },
-            icon: const Icon(Icons.logout, size: 16),
-            label: const Text('Log Out'),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -146,7 +64,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
         actions: [
           // Stress Mode Button Chip
           Padding(
-            padding: const EdgeInsets.only(right: 6),
+            padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
               avatar: Icon(
                 isStressMode ? Icons.bolt : Icons.speed,
@@ -173,18 +91,39 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
             ),
           ),
 
-          // User Profile Avatar
+          // User Profile Avatar with Google Photo / Initials
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: InkWell(
-              onTap: () => _showProfileDialog(context, user),
-              borderRadius: BorderRadius.circular(16),
-              child: CircleAvatar(
-                radius: 15,
-                backgroundColor: AppColors.primary,
-                child: Text(
-                  user?.initials ?? 'T',
-                  style: const TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.bold),
+              onTap: () => ProfileBottomSheet.show(context, user),
+              borderRadius: BorderRadius.circular(18),
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: user?.isGoogle == true
+                        ? const Color(0xFF4285F4)
+                        : AppColors.primary,
+                    width: 1.5,
+                  ),
+                ),
+                child: CircleAvatar(
+                  radius: 14,
+                  backgroundColor: AppColors.primary,
+                  backgroundImage: user?.avatarUrl != null
+                      ? NetworkImage(user!.avatarUrl!)
+                      : null,
+                  child: user?.avatarUrl == null
+                      ? Text(
+                          user?.initials ?? 'T',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : null,
                 ),
               ),
             ),

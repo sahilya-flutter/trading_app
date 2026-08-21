@@ -53,13 +53,29 @@ class AuthRepository {
   bool get isAuthenticated => _currentProfile != null;
 
   UserProfile _mapSupabaseUser(User user) {
+    final meta = user.userMetadata ?? {};
+    final fullName = meta['full_name'] as String? ??
+        meta['name'] as String? ??
+        meta['user_name'] as String? ??
+        user.email?.split('@').first;
+
+    final avatar = meta['avatar_url'] as String? ??
+        meta['picture'] as String?;
+
+    final provider = user.appMetadata['provider'] as String? ??
+        (user.email != null && user.email!.contains('gmail') ? 'google' : 'supabase');
+
     return UserProfile(
       id: user.id,
       email: user.email,
       phone: user.phone,
-      displayName: user.userMetadata?['full_name'] as String? ??
-          user.userMetadata?['name'] as String?,
-      avatarUrl: user.userMetadata?['avatar_url'] as String?,
+      displayName: fullName,
+      avatarUrl: avatar,
+      provider: provider,
+      createdAt: DateTime.tryParse(user.createdAt),
+      lastSignInAt: user.lastSignInAt != null
+          ? DateTime.tryParse(user.lastSignInAt!)
+          : null,
       isDemo: false,
     );
   }
