@@ -1,5 +1,7 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:trading_app/core/config/supabase_config.dart';
 import 'package:trading_app/features/auth/data/auth_repository.dart';
 import 'package:trading_app/features/auth/domain/user_profile.dart';
 import 'package:trading_app/persistence/local_storage_service.dart';
@@ -63,6 +65,17 @@ void main() {
       const u3 = UserProfile(id: '3', phone: '+919876543210');
       expect(u3.displayTitle, '+919876543210');
       expect(u3.initials, '+');
+    });
+
+    test('SupabaseConfig loads environment variables from dotenv accurately', () {
+      dotenv.testLoad(fileInput: '''
+SUPABASE_URL=https://custom-test.supabase.co
+SUPABASE_ANON_KEY=test_anon_key_12345
+''');
+
+      expect(SupabaseConfig.supabaseUrl, 'https://custom-test.supabase.co');
+      expect(SupabaseConfig.supabaseAnonKey, 'test_anon_key_12345');
+      expect(SupabaseConfig.isConfigured, isTrue);
     });
   });
 }
