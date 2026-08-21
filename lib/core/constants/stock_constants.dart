@@ -8,43 +8,43 @@ class StockConstants {
       symbol: 'RELIANCE',
       companyName: 'Reliance Industries Ltd.',
       startingPricePaise: 142000,
-      previousClosePaise: 141500,
+      previousClosePaise: 141500, // UP (Green)
     ),
     Stock(
       symbol: 'TCS',
       companyName: 'Tata Consultancy Services',
       startingPricePaise: 398000,
-      previousClosePaise: 399500,
-    ),
-    Stock(
-      symbol: 'INFY',
-      companyName: 'Infosys Limited',
-      startingPricePaise: 172000,
-      previousClosePaise: 171200,
+      previousClosePaise: 396500, // UP (Green)
     ),
     Stock(
       symbol: 'HDFCBANK',
       companyName: 'HDFC Bank Limited',
       startingPricePaise: 176000,
-      previousClosePaise: 175400,
+      previousClosePaise: 175400, // UP (Green)
+    ),
+    Stock(
+      symbol: 'INFY',
+      companyName: 'Infosys Limited',
+      startingPricePaise: 171200,
+      previousClosePaise: 172000, // DOWN (Red)
+    ),
+    Stock(
+      symbol: 'SBIN',
+      companyName: 'State Bank of India',
+      startingPricePaise: 82000,
+      previousClosePaise: 82500, // DOWN (Red)
+    ),
+    Stock(
+      symbol: 'ITC',
+      companyName: 'ITC Limited',
+      startingPricePaise: 46800,
+      previousClosePaise: 47000, // DOWN (Red)
     ),
     Stock(
       symbol: 'ICICIBANK',
       companyName: 'ICICI Bank Limited',
       startingPricePaise: 132000,
       previousClosePaise: 131800,
-    ),
-    Stock(
-      symbol: 'SBIN',
-      companyName: 'State Bank of India',
-      startingPricePaise: 82000,
-      previousClosePaise: 82500,
-    ),
-    Stock(
-      symbol: 'ITC',
-      companyName: 'ITC Limited',
-      startingPricePaise: 47000,
-      previousClosePaise: 46800,
     ),
     Stock(
       symbol: 'LT',
@@ -69,11 +69,11 @@ class StockConstants {
   static const List<String> symbols = [
     'RELIANCE',
     'TCS',
-    'INFY',
     'HDFCBANK',
-    'ICICIBANK',
+    'INFY',
     'SBIN',
     'ITC',
+    'ICICIBANK',
     'LT',
     'BHARTIARTL',
     'AXISBANK',

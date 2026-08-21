@@ -1,29 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_text_styles.dart';
 import '../../../../core/constants/stock_constants.dart';
 import '../../../../core/utils/money_formatter.dart';
-import '../../../../core/widgets/price_flash_widget.dart';
 import '../../../market/presentation/market_providers.dart';
 
 class WatchlistRow extends ConsumerWidget {
   final String symbol;
   final int index;
   final VoidCallback? onTap;
-  final VoidCallback? onRemove;
 
   const WatchlistRow({
     required Key key,
     required this.symbol,
     required this.index,
     this.onTap,
-    this.onRemove,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Symbol-specific price subscription (independent of list index/position)
     final tick = ref.watch(singleStockPriceProvider(symbol));
     final stock = StockConstants.stockMap[symbol];
 
@@ -36,95 +30,93 @@ class WatchlistRow extends ConsumerWidget {
             : 0.0);
 
     final isPositive = changePaise >= 0;
-    final badgeColor = isPositive ? AppColors.gain : AppColors.loss;
-    final badgeBg = isPositive ? AppColors.gainBg : AppColors.lossBg;
-    final badgeBorder = isPositive ? AppColors.gainBorder : AppColors.lossBorder;
+    final changeColor = isPositive
+        ? const Color(0xFF16A34A) // Green if up
+        : const Color(0xFFDC2626); // Red if down
+
+    final formattedChange =
+        '${MoneyFormatter.formatPaiseWithSign(changePaise)} (${MoneyFormatter.formatPercent(changePercent)})';
 
     return Material(
-      color: Colors.transparent,
+      color: Colors.white,
       child: InkWell(
         onTap: onTap,
-        child: PriceFlashWidget(
-          tick: tick,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              // Drag Handle
-              ReorderableDragStartListener(
-                index: index,
-                child: const Padding(
-                  padding: EdgeInsets.only(right: 12),
-                  child: Icon(
-                    Icons.drag_indicator,
-                    color: AppColors.textDisabled,
-                    size: 20,
+        child: SizedBox(
+          height: 64,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                // Faint grey drag-handle icon (six dots) on far left
+                ReorderableDragStartListener(
+                  index: index,
+                  child: const Padding(
+                    padding: EdgeInsets.only(right: 12),
+                    child: Icon(
+                      Icons.drag_indicator,
+                      color: Color(0xFFC4C8D0), // Faint grey
+                      size: 20,
+                    ),
                   ),
                 ),
-              ),
 
-              // Symbol & Company
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                // Symbol in 15 semibold, with tiny grey "NSE" label under it
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        symbol,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF111827),
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'NSE',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF8E95A2),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Price in 15 semibold (tabular figures), and absolute & % change on one line
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      symbol,
-                      style: AppTextStyles.labelLarge,
+                      MoneyFormatter.formatPaise(ltpPaise),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF111827),
+                        fontFeatures: [FontFeature.tabularFigures()],
+                        letterSpacing: -0.2,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      stock?.companyName ?? '',
-                      style: AppTextStyles.bodySmall,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      formattedChange,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: changeColor,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
                     ),
                   ],
                 ),
-              ),
-
-              // Price & Change
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    MoneyFormatter.formatPaise(ltpPaise),
-                    style: AppTextStyles.monoNumbers,
-                  ),
-                  const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: badgeBg,
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(color: badgeBorder, width: 0.5),
-                    ),
-                    child: Text(
-                      '${MoneyFormatter.formatPaiseWithSign(changePaise)} (${MoneyFormatter.formatPercent(changePercent)})',
-                      style: TextStyle(
-                        color: badgeColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'monospace',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              // Remove Action
-              if (onRemove != null)
-                IconButton(
-                  icon: const Icon(
-                    Icons.close,
-                    size: 16,
-                    color: AppColors.textMuted,
-                  ),
-                  onPressed: onRemove,
-                  tooltip: 'Remove from watchlist',
-                  padding: const EdgeInsets.only(left: 8),
-                  constraints: const BoxConstraints(),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -27,8 +27,9 @@ class AppConstants {
   static const List<String> defaultWatchlistSymbols = [
     'RELIANCE',
     'TCS',
-    'INFY',
     'HDFCBANK',
-    'ICICIBANK',
+    'INFY',
+    'SBIN',
+    'ITC',
   ];
 }

@@ -71,8 +71,20 @@ class LocalStorageService {
     return [
       Watchlist(
         id: AppConstants.defaultWatchlistId,
-        name: AppConstants.defaultWatchlistName,
+        name: 'My Watchlist',
         symbols: List.from(AppConstants.defaultWatchlistSymbols),
+        createdAt: DateTime.now(),
+      ),
+      Watchlist(
+        id: 'watchlist_banking',
+        name: 'Banking',
+        symbols: ['HDFCBANK', 'ICICIBANK', 'SBIN', 'AXISBANK'],
+        createdAt: DateTime.now(),
+      ),
+      Watchlist(
+        id: 'watchlist_it',
+        name: 'IT Stocks',
+        symbols: ['TCS', 'INFY'],
         createdAt: DateTime.now(),
       ),
     ];
