@@ -21,43 +21,40 @@ class DefaultFirebaseOptions {
 
   static FirebaseOptions get web => FirebaseOptions(
         apiKey: dotenv.isInitialized
-            ? (dotenv.env['FIREBASE_WEB_API_KEY'] ?? 'AIzaSyDemoKeyWeb')
-            : 'AIzaSyDemoKeyWeb',
+            ? (dotenv.env['FIREBASE_WEB_API_KEY'] ?? 'AIzaSyTradingAppWebKey')
+            : 'AIzaSyTradingAppWebKey',
         appId: dotenv.isInitialized
-            ? (dotenv.env['FIREBASE_WEB_APP_ID'] ?? '1:1021021021:web:demo')
-            : '1:1021021021:web:demo',
+            ? (dotenv.env['FIREBASE_WEB_APP_ID'] ??
+                '1:1021021021:web:tradingapp18fa5')
+            : '1:1021021021:web:tradingapp18fa5',
         messagingSenderId: '1021021021',
-        projectId: dotenv.isInitialized
-            ? (dotenv.env['FIREBASE_PROJECT_ID'] ?? 'trading-app-021')
-            : 'trading-app-021',
-        authDomain: 'trading-app-021.firebaseapp.com',
+        projectId: 'tradingapp-18fa5',
+        authDomain: 'tradingapp-18fa5.firebaseapp.com',
       );
 
   static FirebaseOptions get android => FirebaseOptions(
         apiKey: dotenv.isInitialized
-            ? (dotenv.env['FIREBASE_ANDROID_API_KEY'] ?? 'AIzaSyDemoKeyAndroid')
-            : 'AIzaSyDemoKeyAndroid',
+            ? (dotenv.env['FIREBASE_ANDROID_API_KEY'] ??
+                'AIzaSyTradingAppAndroidKey')
+            : 'AIzaSyTradingAppAndroidKey',
         appId: dotenv.isInitialized
             ? (dotenv.env['FIREBASE_ANDROID_APP_ID'] ??
-                '1:1021021021:android:demo')
-            : '1:1021021021:android:demo',
+                '1:1021021021:android:tradingapp18fa5')
+            : '1:1021021021:android:tradingapp18fa5',
         messagingSenderId: '1021021021',
-        projectId: dotenv.isInitialized
-            ? (dotenv.env['FIREBASE_PROJECT_ID'] ?? 'trading-app-021')
-            : 'trading-app-021',
+        projectId: 'tradingapp-18fa5',
       );
 
   static FirebaseOptions get ios => FirebaseOptions(
         apiKey: dotenv.isInitialized
-            ? (dotenv.env['FIREBASE_IOS_API_KEY'] ?? 'AIzaSyDemoKeyIOS')
-            : 'AIzaSyDemoKeyIOS',
+            ? (dotenv.env['FIREBASE_IOS_API_KEY'] ?? 'AIzaSyTradingAppIOSKey')
+            : 'AIzaSyTradingAppIOSKey',
         appId: dotenv.isInitialized
-            ? (dotenv.env['FIREBASE_IOS_APP_ID'] ?? '1:1021021021:ios:demo')
-            : '1:1021021021:ios:demo',
+            ? (dotenv.env['FIREBASE_IOS_APP_ID'] ??
+                '1:1021021021:ios:tradingapp18fa5')
+            : '1:1021021021:ios:tradingapp18fa5',
         messagingSenderId: '1021021021',
-        projectId: dotenv.isInitialized
-            ? (dotenv.env['FIREBASE_PROJECT_ID'] ?? 'trading-app-021')
-            : 'trading-app-021',
+        projectId: 'tradingapp-18fa5',
         iosBundleId: 'com.tradingapp.tradingApp',
       );
 }
