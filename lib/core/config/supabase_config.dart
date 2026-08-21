@@ -1,14 +1,18 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class SupabaseConfig {
   SupabaseConfig._();
 
-  /// User's active Supabase Project URL
-  static const String supabaseUrl = 'https://zrhavcjiuzqupgecsfjk.supabase.co';
+  /// Loaded dynamically from .env
+  static String get supabaseUrl =>
+      dotenv.env['SUPABASE_URL'] ?? 'https://zrhavcjiuzqupgecsfjk.supabase.co';
 
-  /// User's active Supabase Anon / Publishable Key
-  static const String supabaseAnonKey =
+  /// Loaded dynamically from .env
+  static String get supabaseAnonKey =>
+      dotenv.env['SUPABASE_ANON_KEY'] ??
       'sb_publishable_fnbMW1xaa76O0oosjGoXMw_rA5qoDyx';
 
-  /// Returns true if valid custom credentials have been configured
+  /// Returns true if valid credentials have been configured
   static bool get isConfigured =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
 }
