@@ -9,67 +9,88 @@ class WatchlistSelectorSheet extends ConsumerWidget {
   void _showCreateDialog(BuildContext context, WidgetRef ref) {
     final controller = TextEditingController();
     final colors = context.colors;
+    String? errorText;
 
     showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: colors.surfaceElevated,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: colors.border),
-        ),
-        title: Text(
-          'Create Watchlist',
-          style: TextStyle(
-            fontFamily: 'Hanken Grotesk',
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: colors.textPrimary,
-          ),
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          style: TextStyle(color: colors.textPrimary),
-          decoration: InputDecoration(
-            hintText: 'Watchlist Name (e.g. Banking, Tech)',
-            hintStyle: TextStyle(color: colors.textMuted, fontSize: 14),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: colors.border),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            backgroundColor: colors.surfaceElevated,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: colors.border),
             ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: colors.primary, width: 1.5),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('Cancel', style: TextStyle(color: colors.textSecondary)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final name = controller.text.trim();
-              if (name.isNotEmpty) {
-                ref.read(watchlistProvider.notifier).createWatchlist(name);
-                Navigator.of(ctx).pop();
-                Navigator.of(context).pop();
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+            title: Text(
+              'Create Watchlist',
+              style: TextStyle(
+                fontFamily: 'Hanken Grotesk',
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: colors.textPrimary,
               ),
             ),
-            child: Text(
-              'Create',
-              style: TextStyle(color: colors.onPrimary, fontWeight: FontWeight.w600),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              style: TextStyle(color: colors.textPrimary),
+              onChanged: (_) {
+                if (errorText != null) {
+                  setDialogState(() => errorText = null);
+                }
+              },
+              decoration: InputDecoration(
+                hintText: 'Watchlist Name (e.g. Banking, Tech)',
+                hintStyle: TextStyle(color: colors.textMuted, fontSize: 14),
+                errorText: errorText,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: colors.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: colors.primary, width: 1.5),
+                ),
+              ),
             ),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: Text('Cancel', style: TextStyle(color: colors.textSecondary)),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final name = controller.text.trim();
+                  if (name.isEmpty) {
+                    setDialogState(() {
+                      errorText = 'Please enter a watchlist name';
+                    });
+                    return;
+                  }
+                  if (ref.read(watchlistProvider.notifier).isNameDuplicate(name)) {
+                    setDialogState(() {
+                      errorText = 'A watchlist with this name already exists';
+                    });
+                    return;
+                  }
+                  ref.read(watchlistProvider.notifier).createWatchlist(name);
+                  Navigator.of(ctx).pop();
+                  Navigator.of(context).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  'Create',
+                  style: TextStyle(color: colors.onPrimary, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -78,66 +99,87 @@ class WatchlistSelectorSheet extends ConsumerWidget {
       BuildContext context, WidgetRef ref, String id, String currentName) {
     final controller = TextEditingController(text: currentName);
     final colors = context.colors;
+    String? errorText;
 
     showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: colors.surfaceElevated,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: colors.border),
-        ),
-        title: Text(
-          'Rename Watchlist',
-          style: TextStyle(
-            fontFamily: 'Hanken Grotesk',
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: colors.textPrimary,
-          ),
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          style: TextStyle(color: colors.textPrimary),
-          decoration: InputDecoration(
-            hintText: 'New Watchlist Name',
-            hintStyle: TextStyle(color: colors.textMuted, fontSize: 14),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: colors.border),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            backgroundColor: colors.surfaceElevated,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: colors.border),
             ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: colors.primary, width: 1.5),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text('Cancel', style: TextStyle(color: colors.textSecondary)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final name = controller.text.trim();
-              if (name.isNotEmpty) {
-                ref.read(watchlistProvider.notifier).renameWatchlist(id, name);
-                Navigator.of(ctx).pop();
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+            title: Text(
+              'Rename Watchlist',
+              style: TextStyle(
+                fontFamily: 'Hanken Grotesk',
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: colors.textPrimary,
               ),
             ),
-            child: Text(
-              'Save',
-              style: TextStyle(color: colors.onPrimary, fontWeight: FontWeight.w600),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              style: TextStyle(color: colors.textPrimary),
+              onChanged: (_) {
+                if (errorText != null) {
+                  setDialogState(() => errorText = null);
+                }
+              },
+              decoration: InputDecoration(
+                hintText: 'New Watchlist Name',
+                hintStyle: TextStyle(color: colors.textMuted, fontSize: 14),
+                errorText: errorText,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: colors.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: colors.primary, width: 1.5),
+                ),
+              ),
             ),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: Text('Cancel', style: TextStyle(color: colors.textSecondary)),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final name = controller.text.trim();
+                  if (name.isEmpty) {
+                    setDialogState(() {
+                      errorText = 'Please enter a watchlist name';
+                    });
+                    return;
+                  }
+                  if (ref.read(watchlistProvider.notifier).isNameDuplicate(name, excludeId: id)) {
+                    setDialogState(() {
+                      errorText = 'A watchlist with this name already exists';
+                    });
+                    return;
+                  }
+                  ref.read(watchlistProvider.notifier).renameWatchlist(id, name);
+                  Navigator.of(ctx).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  'Save',
+                  style: TextStyle(color: colors.onPrimary, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

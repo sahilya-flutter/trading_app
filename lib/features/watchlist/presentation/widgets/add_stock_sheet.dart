@@ -25,6 +25,24 @@ class AddStockSheet extends ConsumerStatefulWidget {
 
 class _AddStockSheetState extends ConsumerState<AddStockSheet> {
   final Set<String> _selectedSymbols = <String>{};
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.trim().toLowerCase();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   void _toggleSelection(String symbol, bool isAlreadyInWatchlist) {
     if (isAlreadyInWatchlist) return; // Non-interactive
@@ -56,7 +74,15 @@ class _AddStockSheetState extends ConsumerState<AddStockSheet> {
     final hasSelection = selectedCount > 0;
     final colors = context.colors;
 
-    final sheetHeight = MediaQuery.of(context).size.height * 0.70;
+    final filteredStocks = _searchQuery.isEmpty
+        ? allStocks
+        : allStocks.where((s) {
+            final sym = s.symbol.toLowerCase();
+            final name = s.companyName.toLowerCase();
+            return sym.contains(_searchQuery) || name.contains(_searchQuery);
+          }).toList();
+
+    final sheetHeight = MediaQuery.of(context).size.height * 0.75;
 
     return Container(
       height: sheetHeight,
@@ -80,7 +106,7 @@ class _AddStockSheetState extends ConsumerState<AddStockSheet> {
 
           // Header Row: "Add stocks" in 17 semibold & close ✕
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 8, 10),
+            padding: const EdgeInsets.fromLTRB(16, 4, 8, 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -104,135 +130,213 @@ class _AddStockSheetState extends ConsumerState<AddStockSheet> {
             ),
           ),
 
+          // Search Bar Input
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: TextField(
+              controller: _searchController,
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 14,
+                color: colors.textPrimary,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Search by symbol or name...',
+                hintStyle: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  color: colors.textMuted,
+                ),
+                prefixIcon: Icon(
+                  Icons.search,
+                  size: 20,
+                  color: colors.textSecondary,
+                ),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(Icons.clear, size: 18, color: colors.textSecondary),
+                        onPressed: () {
+                          _searchController.clear();
+                        },
+                      )
+                    : null,
+                filled: true,
+                fillColor: colors.chipBackground,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: colors.primary, width: 1.5),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 6),
+
           // 1px divider under header
           Divider(height: 1, thickness: 1, color: colors.divider),
 
-          // Body: List of all 10 stocks, 56pt rows
+          // Body: Filtered Stocks List
           Expanded(
-            child: ListView.separated(
-              itemCount: allStocks.length,
-              separatorBuilder: (_, _) =>
-                  Divider(height: 1, thickness: 1, color: colors.divider),
-              itemBuilder: (context, index) {
-                final stock = allStocks[index];
-                final isAlreadyAdded = existingSymbols.contains(stock.symbol);
-                final isSelected = _selectedSymbols.contains(stock.symbol);
-
-                return Consumer(
-                  builder: (context, ref, child) {
-                    final tick =
-                        ref.watch(singleStockPriceProvider(stock.symbol));
-                    final ltpPaise =
-                        tick?.ltpPaise ?? stock.startingPricePaise;
-
-                    Widget rowContent = Container(
-                      height: 56,
-                      color: isSelected
-                          ? colors.primaryContainer.withValues(alpha: 0.25)
-                          : colors.surface,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
+            child: filteredStocks.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Symbol in 15 semibold, with tiny grey "NSE" under it
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  stock.symbol,
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: colors.textPrimary,
-                                    letterSpacing: -0.2,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'NSE',
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
-                                    color: colors.textMuted,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          Icon(
+                            Icons.search_off,
+                            size: 40,
+                            color: colors.textMuted,
                           ),
-
-                          // Current price in tabular figures
+                          const SizedBox(height: 10),
                           Text(
-                            MoneyFormatter.formatPaise(ltpPaise),
+                            'No matching stocks found',
                             style: TextStyle(
-                              fontFamily: 'JetBrains Mono',
+                              fontFamily: 'Inter',
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: colors.textPrimary,
-                              fontFeatures: const [FontFeature.tabularFigures()],
+                              color: colors.textSecondary,
                             ),
                           ),
-
-                          const SizedBox(width: 14),
-
-                          // Selection control: 3 states
-                          if (isAlreadyAdded)
-                            // State 3: Already in watchlist (green tick icon)
-                            Icon(
-                              Icons.check_circle,
-                              size: 22,
-                              color: colors.gain,
-                            )
-                          else if (isSelected)
-                            // State 2: Selected (filled blue checkbox with white tick)
-                            Container(
-                              width: 22,
-                              height: 22,
-                              decoration: BoxDecoration(
-                                color: colors.primary,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Icon(
-                                Icons.check,
-                                size: 16,
-                                color: colors.onPrimary,
-                              ),
-                            )
-                          else
-                            // State 1: Unselected (empty rounded square checkbox in grey)
-                            Container(
-                              width: 22,
-                              height: 22,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                  color: colors.border,
-                                  width: 1.5,
-                                ),
-                              ),
-                            ),
                         ],
                       ),
-                    );
+                    ),
+                  )
+                : ListView.separated(
+                    itemCount: filteredStocks.length,
+                    separatorBuilder: (_, _) =>
+                        Divider(height: 1, thickness: 1, color: colors.divider),
+                    itemBuilder: (context, index) {
+                      final stock = filteredStocks[index];
+                      final isAlreadyAdded = existingSymbols.contains(stock.symbol);
+                      final isSelected = _selectedSymbols.contains(stock.symbol);
 
-                    if (isAlreadyAdded) {
-                      // Whole row at 40% opacity, non-interactive
-                      return Opacity(
-                        opacity: 0.40,
-                        child: rowContent,
+                      return Consumer(
+                        builder: (context, ref, child) {
+                          final tick =
+                              ref.watch(singleStockPriceProvider(stock.symbol));
+                          final ltpPaise =
+                              tick?.ltpPaise ?? stock.startingPricePaise;
+
+                          Widget rowContent = Container(
+                            height: 56,
+                            color: isSelected
+                                ? colors.primaryContainer.withValues(alpha: 0.25)
+                                : colors.surface,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Row(
+                              children: [
+                                // Symbol in 15 semibold, with tiny grey company name under it
+                                Expanded(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        stock.symbol,
+                                        style: TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: colors.textPrimary,
+                                          letterSpacing: -0.2,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        stock.companyName,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                          color: colors.textMuted,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                // Current price in tabular figures
+                                Text(
+                                  MoneyFormatter.formatPaise(ltpPaise),
+                                  style: TextStyle(
+                                    fontFamily: 'JetBrains Mono',
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: colors.textPrimary,
+                                    fontFeatures: const [FontFeature.tabularFigures()],
+                                  ),
+                                ),
+
+                                const SizedBox(width: 14),
+
+                                // Selection control: 3 states
+                                if (isAlreadyAdded)
+                                  // State 3: Already in watchlist (green tick icon)
+                                  Icon(
+                                    Icons.check_circle,
+                                    size: 22,
+                                    color: colors.gain,
+                                  )
+                                else if (isSelected)
+                                  // State 2: Selected (filled blue checkbox with white tick)
+                                  Container(
+                                    width: 22,
+                                    height: 22,
+                                    decoration: BoxDecoration(
+                                      color: colors.primary,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Icon(
+                                      Icons.check,
+                                      size: 16,
+                                      color: colors.onPrimary,
+                                    ),
+                                  )
+                                else
+                                  // State 1: Unselected (empty rounded square checkbox in grey)
+                                  Container(
+                                    width: 22,
+                                    height: 22,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: colors.border,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          );
+
+                          if (isAlreadyAdded) {
+                            // Whole row at 40% opacity, non-interactive
+                            return Opacity(
+                              opacity: 0.40,
+                              child: rowContent,
+                            );
+                          }
+
+                          return InkWell(
+                            onTap: () => _toggleSelection(stock.symbol, false),
+                            child: rowContent,
+                          );
+                        },
                       );
-                    }
-
-                    return InkWell(
-                      onTap: () => _toggleSelection(stock.symbol, false),
-                      child: rowContent,
-                    );
-                  },
-                );
-              },
-            ),
+                    },
+                  ),
           ),
 
           // 1px divider above footer

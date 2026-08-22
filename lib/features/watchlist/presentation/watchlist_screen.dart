@@ -39,71 +39,95 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
   void _showCreateWatchlistDialog(BuildContext context) {
     final textController = TextEditingController();
     final colors = context.colors;
+    String? errorText;
 
     showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: colors.surfaceElevated,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: colors.border),
-        ),
-        title: Text(
-          'Create Watchlist',
-          style: TextStyle(
-            fontFamily: 'Hanken Grotesk',
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: colors.textPrimary,
-          ),
-        ),
-        content: TextField(
-          controller: textController,
-          autofocus: true,
-          style: TextStyle(color: colors.textPrimary),
-          decoration: InputDecoration(
-            hintText: 'e.g. Banking, IT Stocks, Auto',
-            hintStyle: TextStyle(color: colors.textMuted, fontSize: 14),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: colors.border),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            backgroundColor: colors.surfaceElevated,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: colors.border),
             ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: colors.primary, width: 1.5),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: colors.textSecondary),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final name = textController.text.trim();
-              if (name.isNotEmpty) {
-                ref.read(watchlistProvider.notifier).createWatchlist(name);
-                Navigator.of(ctx).pop();
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colors.primary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+            title: Text(
+              'Create Watchlist',
+              style: TextStyle(
+                fontFamily: 'Hanken Grotesk',
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: colors.textPrimary,
               ),
             ),
-            child: Text(
-              'Create',
-              style: TextStyle(color: colors.onPrimary, fontWeight: FontWeight.w600),
+            content: TextField(
+              controller: textController,
+              autofocus: true,
+              style: TextStyle(color: colors.textPrimary),
+              onChanged: (_) {
+                if (errorText != null) {
+                  setDialogState(() => errorText = null);
+                }
+              },
+              decoration: InputDecoration(
+                hintText: 'e.g. Banking, IT Stocks, Auto',
+                hintStyle: TextStyle(color: colors.textMuted, fontSize: 14),
+                errorText: errorText,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: colors.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: colors.primary, width: 1.5),
+                ),
+              ),
             ),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(color: colors.textSecondary),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final name = textController.text.trim();
+                  if (name.isEmpty) {
+                    setDialogState(() {
+                      errorText = 'Please enter a watchlist name';
+                    });
+                    return;
+                  }
+                  if (ref
+                      .read(watchlistProvider.notifier)
+                      .isNameDuplicate(name)) {
+                    setDialogState(() {
+                      errorText = 'A watchlist with this name already exists';
+                    });
+                    return;
+                  }
+                  ref.read(watchlistProvider.notifier).createWatchlist(name);
+                  Navigator.of(ctx).pop();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  'Create',
+                  style: TextStyle(
+                      color: colors.onPrimary, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
