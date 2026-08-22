@@ -8,4 +8,5 @@ class StorageKeys {
   static const String orders = 'trading_app_orders';
   static const String authProfile = 'trading_app_auth_profile';
   static const String tickRate = 'trading_app_tick_rate';
+  static const String notifications = 'trading_app_notifications';
 }
