@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../core/utils/money_formatter.dart';
 import '../../../core/utils/quantity_utils.dart';
+import '../../../core/widgets/trading_app_bar.dart';
 import '../domain/order_side.dart';
 import 'order_providers.dart';
 
@@ -24,25 +25,8 @@ class OrderHistoryScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: colors.background,
-      appBar: AppBar(
-        backgroundColor: colors.surface,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: textDark, size: 22),
-          onPressed: () => context.pop(),
-        ),
-        title: Text(
-          'Order History',
-          style: TextStyle(
-            fontFamily: 'Hanken Grotesk',
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: textDark,
-            letterSpacing: -0.3,
-          ),
-        ),
-        centerTitle: false,
+      appBar: TradingAppBar.secondary(
+        title: 'Order History',
       ),
       body: SafeArea(
         child: orders.isEmpty

@@ -5,6 +5,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../core/utils/money_formatter.dart';
 import '../../../core/utils/quantity_utils.dart';
+import '../../../core/widgets/trading_app_bar.dart';
 import '../domain/order_model.dart';
 import '../domain/order_side.dart';
 
@@ -25,19 +26,14 @@ class OrderConfirmationScreen extends StatelessWidget {
         DateFormat('dd MMM yyyy, hh:mm:ss a').format(order.timestamp);
 
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text(
-          'Order Status',
-          style: TextStyle(
-            fontFamily: 'Hanken Grotesk',
-            fontWeight: FontWeight.w700,
-            color: colors.textPrimary,
-          ),
-        ),
+      backgroundColor: colors.background,
+      appBar: TradingAppBar.secondary(
+        title: 'Order Status',
+        showBackButton: false,
         actions: [
           IconButton(
-            icon: Icon(Icons.close, color: colors.textPrimary),
+            icon: Icon(Icons.close, color: colors.textPrimary, size: 22),
+            tooltip: 'Close',
             onPressed: () => context.go('/market'),
           ),
         ],

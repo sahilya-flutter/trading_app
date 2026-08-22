@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../core/widgets/trading_bottom_nav.dart';
 import '../features/auth/domain/user_profile.dart';
 import '../features/auth/presentation/auth_providers.dart';
 import '../features/auth/presentation/login_screen.dart';
@@ -13,7 +14,6 @@ import '../features/order/presentation/order_history_screen.dart';
 import '../features/order/presentation/order_ticket_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
 import '../features/watchlist/presentation/watchlist_screen.dart';
-import 'theme/app_colors.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -152,61 +152,12 @@ class ScaffoldWithBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selectedIndex = _calculateSelectedIndex(context);
-    final colors = context.colors;
-
-    final activeColor = colors.primary;
-    final inactiveColor = colors.textSecondary;
-    final navBg = colors.surface;
-    final borderColor = colors.border;
 
     return Scaffold(
       body: child,
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: navBg,
-          border: Border(top: BorderSide(color: borderColor, width: 1)),
-        ),
-        child: BottomNavigationBar(
-          backgroundColor: navBg,
-          elevation: 0,
-          currentIndex: selectedIndex,
-          onTap: (index) => _onItemTapped(index, context),
-          selectedItemColor: activeColor,
-          unselectedItemColor: inactiveColor,
-          selectedLabelStyle: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: activeColor,
-          ),
-          unselectedLabelStyle: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: inactiveColor,
-          ),
-          type: BottomNavigationBarType.fixed,
-          items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home, color: activeColor),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.featured_play_list_outlined),
-              activeIcon: Icon(Icons.featured_play_list, color: activeColor),
-              label: 'Watchlist',
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.trending_up),
-              activeIcon: Icon(Icons.trending_up, color: activeColor),
-              label: 'Market',
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.account_balance_wallet_outlined),
-              activeIcon: Icon(Icons.account_balance_wallet, color: activeColor),
-              label: 'Holdings',
-            ),
-          ],
-        ),
+      bottomNavigationBar: TradingBottomNav(
+        currentIndex: selectedIndex,
+        onTap: (index) => _onItemTapped(index, context),
       ),
     );
   }

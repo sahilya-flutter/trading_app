@@ -7,6 +7,7 @@ import '../../../core/constants/stock_constants.dart';
 import '../../../core/utils/money_formatter.dart';
 import '../../../core/utils/quantity_utils.dart';
 import '../../../core/widgets/price_flash_widget.dart';
+import '../../../core/widgets/trading_app_bar.dart';
 import '../../holdings/presentation/holdings_providers.dart';
 import '../../market/domain/stock.dart';
 import '../../market/presentation/market_providers.dart';
@@ -156,19 +157,9 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
     final isSubmitEnabled = liveError == null && !_isSubmitting;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          '${widget.symbol} Order Ticket',
-          style: TextStyle(
-            fontFamily: 'Hanken Grotesk',
-            fontWeight: FontWeight.w700,
-            color: colors.textPrimary,
-          ),
-        ),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: colors.textPrimary),
-          onPressed: () => context.pop(),
-        ),
+      backgroundColor: colors.background,
+      appBar: TradingAppBar.secondary(
+        title: '${widget.symbol} Order Ticket',
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
