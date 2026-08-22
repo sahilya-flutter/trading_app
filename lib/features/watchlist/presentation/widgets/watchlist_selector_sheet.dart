@@ -200,58 +200,57 @@ class WatchlistSelectorSheet extends ConsumerWidget {
     final activeId = state.activeWatchlistId;
     final colors = context.colors;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-        border: Border.all(color: colors.border),
-      ),
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Handle bar
-          Container(
-            margin: const EdgeInsets.only(top: 8, bottom: 6),
-            width: 36,
-            height: 4,
-            decoration: BoxDecoration(
-              color: colors.border,
-              borderRadius: BorderRadius.circular(2),
+    return Material(
+      color: colors.surfaceElevated,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      child: Container(
+        padding: const EdgeInsets.only(bottom: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              margin: const EdgeInsets.only(top: 8, bottom: 6),
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: colors.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
 
-          // Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Manage Watchlists',
-                  style: TextStyle(
-                    fontFamily: 'Hanken Grotesk',
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                    color: colors.textPrimary,
-                  ),
-                ),
-                TextButton.icon(
-                  icon: Icon(Icons.add, size: 18, color: colors.primary),
-                  label: Text(
-                    'New Watchlist',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      color: colors.primary,
-                      fontWeight: FontWeight.w600,
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Manage Watchlists',
+                      style: TextStyle(
+                        fontFamily: 'Hanken Grotesk',
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: colors.textPrimary,
+                      ),
                     ),
                   ),
-                  onPressed: () => _showCreateDialog(context, ref),
-                ),
-              ],
+                  TextButton.icon(
+                    icon: Icon(Icons.add, size: 18, color: colors.primary),
+                    label: Text(
+                      'New Watchlist',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        color: colors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    onPressed: () => _showCreateDialog(context, ref),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Divider(height: 1, thickness: 1, color: colors.divider),
+            Divider(height: 1, thickness: 1, color: colors.divider),
 
           // Watchlist list
           Flexible(
@@ -324,6 +323,7 @@ class WatchlistSelectorSheet extends ConsumerWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

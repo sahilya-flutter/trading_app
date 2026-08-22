@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/theme_provider.dart';
+import '../../../core/widgets/user_avatar_view.dart';
 import '../../auth/presentation/auth_providers.dart';
 import 'widgets/market_snapshot_card.dart';
 import 'widgets/notification_sheet.dart';
@@ -73,21 +74,12 @@ class HomeDashboardScreen extends ConsumerWidget {
                           children: [
                             CircleAvatar(
                               radius: 17,
-                              backgroundColor: colors.chipBackground,
-                              backgroundImage: user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty
-                                  ? NetworkImage(user.avatarUrl!)
-                                  : null,
-                              child: (user?.avatarUrl == null || user!.avatarUrl!.isEmpty)
-                                  ? Text(
-                                      user?.initials ?? 'ST',
-                                      style: TextStyle(
-                                        fontFamily: 'Inter',
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                        color: primaryColor,
-                                      ),
-                                    )
-                                  : null,
+                              backgroundColor: Colors.transparent,
+                              child: UserAvatarView(
+                                user: user,
+                                size: 34,
+                                fontSize: 12,
+                              ),
                             ),
                             const SizedBox(width: 10),
                             Text(

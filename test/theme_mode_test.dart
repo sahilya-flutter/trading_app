@@ -82,8 +82,9 @@ void main() {
         expect(find.text('021 Trade'), findsOneWidget);
         expect(find.text('Sign in to continue trading'), findsOneWidget);
         expect(find.text('MOBILE NUMBER'), findsOneWidget);
-        expect(find.text('PASSWORD'), findsOneWidget);
         expect(find.text('Sign In'), findsOneWidget);
+        expect(find.text('OR'), findsOneWidget);
+        expect(find.text('Continue with Google'), findsOneWidget);
       }
     });
 

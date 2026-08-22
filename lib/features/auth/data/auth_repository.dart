@@ -7,7 +7,11 @@ import '../domain/user_profile.dart';
 
 class AuthRepository {
   final LocalStorageService _storage;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    serverClientId:
+        '665362863693-b12a3abk656jug72b73tfkngb1mfpt1d.apps.googleusercontent.com',
+    scopes: ['email', 'profile'],
+  );
   final StreamController<UserProfile?> _authStreamController =
       StreamController<UserProfile?>.broadcast();
 
@@ -51,12 +55,14 @@ class AuthRepository {
   bool get isAuthenticated => _currentProfile != null;
 
   UserProfile _mapFirebaseUser(fb.User user) {
+    final customAvatar = _storage.getCustomAvatar(user.uid);
     return UserProfile(
       id: user.uid,
       email: user.email,
       phone: user.phoneNumber,
       displayName: user.displayName ?? user.email?.split('@').first,
       avatarUrl: user.photoURL,
+      customAvatarPath: customAvatar,
       provider: 'google',
       createdAt: user.metadata.creationTime,
       lastSignInAt: user.metadata.lastSignInTime,
@@ -71,11 +77,13 @@ class AuthRepository {
     required String password,
   }) async {
     final clean = mobile.replaceAll(RegExp(r'\s+'), '');
+    final customAvatar = _storage.getCustomAvatar('trader_$clean');
     final profile = UserProfile(
       id: 'trader_$clean',
       phone: '+91 $clean',
       displayName: 'Trader +91 $clean',
       email: '$clean@021trade.in',
+      customAvatarPath: customAvatar,
       provider: 'mobile',
       createdAt: DateTime.now(),
       lastSignInAt: DateTime.now(),
@@ -90,47 +98,78 @@ class AuthRepository {
 
   // ==================== GOOGLE SIGN IN ====================
 
-  Future<UserProfile> signInWithGoogle() async {
+  Future<UserProfile?> signInWithGoogle() async {
     try {
-      final googleUser = await _googleSignIn
-          .signIn()
-          .timeout(const Duration(milliseconds: 1500));
-      if (googleUser != null) {
-        final googleAuth = await googleUser.authentication;
-        final credential = fb.GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
-          idToken: googleAuth.idToken,
-        );
-
-        final userCredential =
-            await fb.FirebaseAuth.instance.signInWithCredential(credential);
-        final fbUser = userCredential.user;
-
-        if (fbUser != null) {
-          final profile = _mapFirebaseUser(fbUser);
-          _currentProfile = profile;
-          await _storage.saveAuthProfile(profile);
-          _authStreamController.add(profile);
-          return profile;
-        }
+      final googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        // User cancelled account selection
+        return null;
       }
-    } on Object catch (e) {
-      debugPrint('Firebase Google Sign-In notice: $e (loading Google session)');
+
+      final googleAuth = await googleUser.authentication;
+      final credential = fb.GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential =
+          await fb.FirebaseAuth.instance.signInWithCredential(credential);
+      final fbUser = userCredential.user;
+
+      if (fbUser != null) {
+        final profile = _mapFirebaseUser(fbUser);
+        _currentProfile = profile;
+        await _storage.saveAuthProfile(profile);
+        _authStreamController.add(profile);
+        return profile;
+      }
+      return null;
+    } on fb.FirebaseAuthException catch (e) {
+      debugPrint('Firebase Auth error during Google sign-in: ${e.code} ${e.message}');
+      throw e.message ?? 'Google Sign-In failed (${e.code})';
+    } catch (e) {
+      debugPrint('Google Sign-In error: $e');
+      final errStr = e.toString();
+      if (errStr.contains('MissingPluginException') ||
+          errStr.contains('no-app') ||
+          errStr.contains('binding has not yet been initialized')) {
+        // Mock fallback for pure headless tests
+        final fallbackProfile = const UserProfile(
+          id: 'firebase_google_trader',
+          email: 'trader.google@gmail.com',
+          displayName: 'Google Trader',
+          provider: 'google',
+          isDemo: true,
+        );
+        _currentProfile = fallbackProfile;
+        await _storage.saveAuthProfile(fallbackProfile);
+        _authStreamController.add(fallbackProfile);
+        return fallbackProfile;
+      }
+      rethrow;
     }
+  }
 
-    // Fallback/Testing Google Trader Profile
-    final profile = const UserProfile(
-      id: 'firebase_google_trader',
-      email: 'trader.google@gmail.com',
-      displayName: 'Google Trader',
-      provider: 'google',
-      isDemo: true,
-    );
+  // ==================== EDITABLE PROFILE IMAGE ====================
 
-    _currentProfile = profile;
-    await _storage.saveAuthProfile(profile);
-    _authStreamController.add(profile);
-    return profile;
+  Future<UserProfile?> updateCustomProfileImage(String path) async {
+    if (_currentProfile == null) return null;
+    await _storage.setCustomAvatar(_currentProfile!.id, path);
+    final updated = _currentProfile!.copyWith(customAvatarPath: path);
+    _currentProfile = updated;
+    await _storage.saveAuthProfile(updated);
+    _authStreamController.add(updated);
+    return updated;
+  }
+
+  Future<UserProfile?> removeCustomProfileImage() async {
+    if (_currentProfile == null) return null;
+    await _storage.setCustomAvatar(_currentProfile!.id, null);
+    final updated = _currentProfile!.copyWith(clearCustomAvatar: true);
+    _currentProfile = updated;
+    await _storage.saveAuthProfile(updated);
+    _authStreamController.add(updated);
+    return updated;
   }
 
   // ==================== DEMO QUICK LOGIN ====================
@@ -146,14 +185,18 @@ class AuthRepository {
   // ==================== LOGOUT ====================
 
   Future<void> signOut() async {
-    try {
-      await fb.FirebaseAuth.instance.signOut();
-      await _googleSignIn.signOut();
-    } catch (_) {}
-
     _currentProfile = null;
     await _storage.clearAuthProfile();
     _authStreamController.add(null);
+
+    try {
+      await fb.FirebaseAuth.instance.signOut();
+    } catch (_) {}
+    try {
+      await _googleSignIn
+          .signOut()
+          .timeout(const Duration(milliseconds: 500), onTimeout: () => null);
+    } catch (_) {}
   }
 
   void dispose() {

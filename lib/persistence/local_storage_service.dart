@@ -188,7 +188,7 @@ class LocalStorageService {
     }
   }
 
-  // ==================== AUTH PROFILE ====================
+  // ==================== AUTH PROFILE & CUSTOM AVATAR ====================
 
   UserProfile? loadAuthProfile() {
     try {
@@ -219,5 +219,31 @@ class LocalStorageService {
 
   Future<bool> clearAuthProfile() async {
     return await _prefs.remove(StorageKeys.authProfile);
+  }
+
+  String? getCustomAvatar(String userId) {
+    return _prefs.getString('custom_avatar_$userId');
+  }
+
+  Future<bool> setCustomAvatar(String userId, String? path) async {
+    if (path == null || path.isEmpty) {
+      return await _prefs.remove('custom_avatar_$userId');
+    }
+    return await _prefs.setString('custom_avatar_$userId', path);
+  }
+
+  // ==================== TICK RATE ====================
+
+  int loadTickRate() {
+    return _prefs.getInt(StorageKeys.tickRate) ?? 5; // Default 5 ticks/sec
+  }
+
+  Future<bool> saveTickRate(int rate) async {
+    try {
+      return await _prefs.setInt(StorageKeys.tickRate, rate);
+    } catch (e) {
+      debugPrint('Error saving tick rate: $e');
+      return false;
+    }
   }
 }

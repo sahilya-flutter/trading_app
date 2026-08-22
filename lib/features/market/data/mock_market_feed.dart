@@ -11,10 +11,11 @@ class MockMarketFeed {
 
   final Map<String, PriceTick> _latestTicks = {};
   Timer? _timer;
+  int _ticksPerSecond = 5;
   bool _isStressMode = false;
   bool _isRunning = false;
 
-  MockMarketFeed() {
+  MockMarketFeed({int initialTickRate = 5}) : _ticksPerSecond = initialTickRate {
     _initStartingPrices();
   }
 
@@ -33,6 +34,7 @@ class MockMarketFeed {
 
   bool get isRunning => _isRunning;
   bool get isStressMode => _isStressMode;
+  int get ticksPerSecond => _ticksPerSecond;
 
   Map<String, PriceTick> get allCurrentTicks => Map.unmodifiable(_latestTicks);
 
@@ -66,10 +68,37 @@ class MockMarketFeed {
     }
   }
 
+  void setTickRate(int rate) {
+    if (rate <= 0) return;
+    _ticksPerSecond = rate;
+    if (_isRunning && !_isStressMode) {
+      _timer?.cancel();
+      _scheduleTicks();
+    }
+  }
+
+  int _calculateIntervalMs() {
+    if (_isStressMode) {
+      return AppConstants.stressTickIntervalMs;
+    }
+    switch (_ticksPerSecond) {
+      case 1:
+        return 1000;
+      case 5:
+        return 200;
+      case 10:
+        return 100;
+      case 20:
+        return 50;
+      case 50:
+        return 20;
+      default:
+        return (1000 / _ticksPerSecond).round().clamp(20, 2000);
+    }
+  }
+
   void _scheduleTicks() {
-    final intervalMs = _isStressMode
-        ? AppConstants.stressTickIntervalMs
-        : AppConstants.defaultTickIntervalMs;
+    final intervalMs = _calculateIntervalMs();
 
     _timer = Timer.periodic(Duration(milliseconds: intervalMs), (_) {
       _generateNextTick();
@@ -89,14 +118,14 @@ class MockMarketFeed {
     final prevClose = currentTick.previousClosePaise;
 
     // Generate basis points move between -maxBasisPoints and +maxBasisPoints
-    // E.g. -35 to +35 bps (0.35% move)
+    // E.g. -50 to +50 bps (0.50% move)
     final bps = (_random.nextInt(AppConstants.maxBasisPointsMovement * 2 + 1)) -
         AppConstants.maxBasisPointsMovement;
 
     // Convert bps to delta in paise (1 bps = 0.01% = 0.0001)
     var deltaPaise = (currentLtp * bps) ~/ 10000;
 
-    // Ensure minimum move of at least 5 paise (50 paise in stock terms) if non-zero
+    // Ensure minimum move of at least 10 paise if non-zero
     if (deltaPaise == 0) {
       deltaPaise = _random.nextBool() ? 10 : -10;
     }

@@ -6,6 +6,8 @@ import 'package:trading_app/firebase_options.dart';
 import 'package:trading_app/persistence/local_storage_service.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('Auth & 021 Trade Login Tests', () {
     late LocalStorageService storage;
     late AuthRepository authRepo;

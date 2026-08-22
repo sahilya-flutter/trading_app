@@ -292,23 +292,81 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
                           },
                           itemBuilder: (context, index) {
                             final sym = symbols[index];
-                            return Column(
-                              key: ValueKey(sym),
-                              children: [
-                                WatchlistRow(
-                                  key: Key('watchlist_row_$sym'),
-                                  symbol: sym,
-                                  index: index,
-                                  onTap: () {
-                                    context.push('/order?symbol=$sym');
-                                  },
+                            return Dismissible(
+                              key: ValueKey('dismissible_${activeWatchlist?.id}_$sym'),
+                              direction: DismissDirection.endToStart,
+                              background: Container(
+                                alignment: Alignment.centerRight,
+                                padding: const EdgeInsets.only(right: 20),
+                                color: colors.loss,
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Icon(
+                                      Icons.delete_outline,
+                                      color: Colors.white,
+                                      size: 22,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Remove',
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                Divider(
-                                  height: 1,
-                                  thickness: 1,
-                                  color: hairline,
-                                ),
-                              ],
+                              ),
+                              onDismissed: (direction) {
+                                final removedIndex = index;
+                                ref
+                                    .read(watchlistProvider.notifier)
+                                    .removeStockFromActiveWatchlist(sym);
+
+                                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      '$sym removed from watchlist',
+                                      style: TextStyle(color: colors.textPrimary),
+                                    ),
+                                    backgroundColor: colors.surfaceElevated,
+                                    behavior: SnackBarBehavior.floating,
+                                    duration: const Duration(seconds: 3),
+                                    action: SnackBarAction(
+                                      label: 'Undo',
+                                      textColor: colors.primary,
+                                      onPressed: () {
+                                        ref
+                                            .read(watchlistProvider.notifier)
+                                            .insertStockIntoActiveWatchlist(
+                                                sym, removedIndex);
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Column(
+                                key: ValueKey('row_wrapper_$sym'),
+                                children: [
+                                  WatchlistRow(
+                                    key: Key('watchlist_row_$sym'),
+                                    symbol: sym,
+                                    index: index,
+                                    onTap: () {
+                                      context.push('/order?symbol=$sym');
+                                    },
+                                  ),
+                                  Divider(
+                                    height: 1,
+                                    thickness: 1,
+                                    color: hairline,
+                                  ),
+                                ],
+                              ),
                             );
                           },
                         ),

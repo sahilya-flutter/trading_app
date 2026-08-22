@@ -9,6 +9,7 @@ import '../features/home/presentation/home_dashboard_screen.dart';
 import '../features/market/presentation/market_screen.dart';
 import '../features/order/domain/order_model.dart';
 import '../features/order/presentation/order_confirmation_screen.dart';
+import '../features/order/presentation/order_history_screen.dart';
 import '../features/order/presentation/order_ticket_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
 import '../features/watchlist/presentation/watchlist_screen.dart';
@@ -102,6 +103,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           }
           return OrderConfirmationScreen(order: order);
         },
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/order-history',
+        builder: (context, state) => const OrderHistoryScreen(),
       ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,

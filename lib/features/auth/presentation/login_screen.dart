@@ -84,6 +84,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  void _handleGoogleSignIn() async {
+    final success = await ref
+        .read(authControllerProvider.notifier)
+        .signInWithGoogle();
+
+    if (success && mounted) {
+      context.go('/market');
+    }
+  }
+
   void _showInfoSnackbar(String message) {
     final colors = context.colors;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -100,11 +110,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
+  void _showErrorSnackbar(String message) {
+    final colors = context.colors;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: colors.loss,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
     final isLoading = authState.isLoading;
     final colors = context.colors;
+
+    ref.listen<AuthControllerState>(authControllerProvider, (prev, next) {
+      if (next.errorMessage != null && next.errorMessage!.isNotEmpty) {
+        _showErrorSnackbar(next.errorMessage!);
+      }
+    });
 
     final cleanMobile = _cleanMobile(_mobileController.text);
     final isMobileValid = cleanMobile.length == 10;
@@ -143,7 +175,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Generous top spacing (~80pt)
-                        const SizedBox(height: 64),
+                        const SizedBox(height: 48),
 
                         // Brand block (left-aligned)
                         Container(
@@ -182,8 +214,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
 
-                        // ~40pt gap
-                        const SizedBox(height: 40),
+                        // ~32pt gap
+                        const SizedBox(height: 32),
 
                         // Form Fields (Dimmed if loading)
                         Opacity(
@@ -416,10 +448,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
 
-                        // 24pt gap
-                        const SizedBox(height: 24),
+                        // 20pt gap
+                        const SizedBox(height: 20),
 
-                        // Full-width 52pt filled button
+                        // Full-width 52pt filled Sign In button
                         SizedBox(
                           width: double.infinity,
                           height: 52,
@@ -461,6 +493,76 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         // 16pt gap
                         const SizedBox(height: 16),
 
+                        // Clean "OR" Divider
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                color: borderGrey,
+                                thickness: 1,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 14),
+                              child: Text(
+                                'OR',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: footerGrey,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Divider(
+                                color: borderGrey,
+                                thickness: 1,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        // 16pt gap
+                        const SizedBox(height: 16),
+
+                        // Full-width 52pt "Continue with Google" button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: OutlinedButton(
+                            onPressed: isLoading ? null : _handleGoogleSignIn,
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: colors.surface,
+                              side: BorderSide(color: borderGrey, width: 1),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const _GoogleGIcon(size: 20),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Continue with Google',
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: textDark,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // 16pt gap
+                        const SizedBox(height: 16),
+
                         // Centered "New here? Create account"
                         Center(
                           child: GestureDetector(
@@ -495,7 +597,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         // Pinned near bottom safe area: 11pt footer line
                         Center(
                           child: Padding(
-                            padding: const EdgeInsets.only(bottom: 12.0, top: 24.0),
+                            padding: const EdgeInsets.only(bottom: 12.0, top: 20.0),
                             child: Text(
                               'Simulated trading. No real money involved.',
                               style: TextStyle(
@@ -517,4 +619,136 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
     );
   }
+}
+
+/// A crisp Google 4-color 'G' icon matching the official Google brand specification
+class _GoogleGIcon extends StatelessWidget {
+  final double size;
+
+  const _GoogleGIcon({this.size = 20});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _GoogleGLogoPainter(),
+      ),
+    );
+  }
+}
+
+class _GoogleGLogoPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double w = size.width;
+    final double h = size.height;
+    final Offset center = Offset(w / 2, h / 2);
+    final double radius = w / 2;
+
+    // Paint configuration
+    final Paint bluePaint = Paint()
+      ..color = const Color(0xFF4285F4)
+      ..style = PaintingStyle.fill;
+    final Paint redPaint = Paint()
+      ..color = const Color(0xFFEA4335)
+      ..style = PaintingStyle.fill;
+    final Paint yellowPaint = Paint()
+      ..color = const Color(0xFFFBBC05)
+      ..style = PaintingStyle.fill;
+    final Paint greenPaint = Paint()
+      ..color = const Color(0xFF34A853)
+      ..style = PaintingStyle.fill;
+
+    // Outer and inner paths for standard Google 4-color segmented arc
+    final Path bluePath = Path()
+      ..moveTo(center.dx, center.dy - radius * 0.2)
+      ..lineTo(center.dx + radius, center.dy - radius * 0.2)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: radius),
+        -0.3,
+        1.1,
+        false,
+      )
+      ..lineTo(center.dx + radius * 0.4, center.dy + radius * 0.4)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: radius * 0.55),
+        0.8,
+        -0.8,
+        false,
+      )
+      ..close();
+
+    final Path greenPath = Path()
+      ..moveTo(center.dx + radius * 0.7, center.dy + radius * 0.7)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: radius),
+        0.8,
+        1.3,
+        false,
+      )
+      ..lineTo(center.dx - radius * 0.35, center.dy + radius * 0.35)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: radius * 0.55),
+        2.1,
+        -1.3,
+        false,
+      )
+      ..close();
+
+    final Path yellowPath = Path()
+      ..moveTo(center.dx - radius * 0.7, center.dy + radius * 0.7)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: radius),
+        2.1,
+        1.1,
+        false,
+      )
+      ..lineTo(center.dx - radius * 0.35, center.dy - radius * 0.35)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: radius * 0.55),
+        3.2,
+        -1.1,
+        false,
+      )
+      ..close();
+
+    final Path redPath = Path()
+      ..moveTo(center.dx - radius * 0.7, center.dy - radius * 0.7)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: radius),
+        3.2,
+        1.3,
+        false,
+      )
+      ..lineTo(center.dx + radius * 0.35, center.dy - radius * 0.35)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: radius * 0.55),
+        4.5,
+        -1.3,
+        false,
+      )
+      ..close();
+
+    // Central crossbar for the G
+    final Rect barRect = Rect.fromLTRB(
+      center.dx - radius * 0.05,
+      center.dy - radius * 0.22,
+      center.dx + radius,
+      center.dy + radius * 0.22,
+    );
+
+    canvas.drawPath(redPath, redPaint);
+    canvas.drawPath(yellowPath, yellowPaint);
+    canvas.drawPath(greenPath, greenPaint);
+    canvas.drawPath(bluePath, bluePaint);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(barRect, const Radius.circular(2)),
+      bluePaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

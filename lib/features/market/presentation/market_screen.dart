@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../app/theme/theme_provider.dart';
+import '../../../core/widgets/user_avatar_view.dart';
 import '../../auth/presentation/auth_providers.dart';
 import 'market_providers.dart';
 import 'widgets/market_price_row.dart';
@@ -148,21 +149,12 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                 ),
                 child: CircleAvatar(
                   radius: 14,
-                  backgroundColor: colors.primary,
-                  backgroundImage: user?.avatarUrl != null
-                      ? NetworkImage(user!.avatarUrl!)
-                      : null,
-                  child: user?.avatarUrl == null
-                      ? Text(
-                          user?.initials ?? 'T',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 11,
-                            color: colors.onPrimary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )
-                      : null,
+                  backgroundColor: Colors.transparent,
+                  child: UserAvatarView(
+                    user: user,
+                    size: 28,
+                    fontSize: 11,
+                  ),
                 ),
               ),
             ),
