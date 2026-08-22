@@ -207,7 +207,38 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
               ],
             ),
           ),
-          const Divider(),
+
+          // Column Headers Strip: SYMBOL / COMPANY vs LTP / CHG (%)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            color: colors.chipBackground.withValues(alpha: 0.5),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'SYMBOL / COMPANY',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: colors.textSecondary,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                Text(
+                  'LTP / CHG (%)',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: colors.textSecondary,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(height: 1, thickness: 1, color: colors.divider),
 
           // Stocks List
           Expanded(
