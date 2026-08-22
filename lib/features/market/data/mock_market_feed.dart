@@ -150,6 +150,14 @@ class MockMarketFeed {
     }
   }
 
+  /// Emits a deterministic tick directly (useful for tests and manual price updates)
+  void emitTick(PriceTick tick) {
+    _latestTicks[tick.symbol] = tick;
+    if (!_tickController.isClosed) {
+      _tickController.add(tick);
+    }
+  }
+
   void dispose() {
     stop();
     _tickController.close();
