@@ -5,6 +5,7 @@ import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/theme_provider.dart';
 import '../../../core/widgets/user_avatar_view.dart';
 import '../../auth/presentation/auth_providers.dart';
+import '../../notifications/presentation/notifications_providers.dart';
 import 'widgets/market_snapshot_card.dart';
 import 'widgets/notification_sheet.dart';
 import 'widgets/portfolio_summary_card.dart';
@@ -28,6 +29,7 @@ class HomeDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authStateProvider);
+    final unreadCount = ref.watch(unreadNotificationsCountProvider);
     final isDark = context.isDark;
     final colors = context.colors;
 
@@ -125,18 +127,36 @@ class HomeDashboardScreen extends ConsumerWidget {
                                   color: primaryColor,
                                   size: 24,
                                 ),
-                                Positioned(
-                                  top: 0,
-                                  right: 0,
-                                  child: Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: BoxDecoration(
-                                      color: colors.gain,
-                                      shape: BoxShape.circle,
+                                if (unreadCount > 0)
+                                  Positioned(
+                                    top: -2,
+                                    right: -4,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 4,
+                                        vertical: 1,
+                                      ),
+                                      constraints: const BoxConstraints(
+                                        minWidth: 16,
+                                        minHeight: 16,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: colors.gain,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          unreadCount > 9 ? '9+' : '$unreadCount',
+                                          style: const TextStyle(
+                                            fontFamily: 'Inter',
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
                               ],
                             ),
                           ),

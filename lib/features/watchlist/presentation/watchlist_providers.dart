@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../persistence/local_storage_service.dart';
 import '../../market/presentation/market_providers.dart';
+import '../../notifications/domain/notification_item.dart';
+import '../../notifications/presentation/notifications_providers.dart';
 import '../domain/watchlist.dart';
 
 class WatchlistState {
@@ -34,9 +36,10 @@ class WatchlistState {
 
 class WatchlistNotifier extends StateNotifier<WatchlistState> {
   final LocalStorageService _storage;
+  final Ref? _ref;
   final Uuid _uuid = const Uuid();
 
-  WatchlistNotifier(this._storage)
+  WatchlistNotifier(this._storage, [this._ref])
       : super(WatchlistState(
           watchlists: _storage.loadWatchlists(),
           activeWatchlistId: _storage.loadActiveWatchlistId(),
@@ -88,6 +91,14 @@ class WatchlistNotifier extends StateNotifier<WatchlistState> {
       activeWatchlistId: newWatchlist.id,
     );
     _persist();
+
+    _ref?.read(notificationsProvider.notifier).addNotification(
+          title: 'Watchlist created',
+          message: '$cleanName watchlist created',
+          type: NotificationType.watchlist,
+          metadata: {'watchlistId': newWatchlist.id},
+        );
+
     return newWatchlist.id;
   }
 
@@ -95,8 +106,10 @@ class WatchlistNotifier extends StateNotifier<WatchlistState> {
     final cleanName = newName.trim();
     if (cleanName.isEmpty) return;
 
+    String? oldName;
     final updated = state.watchlists.map((w) {
       if (w.id == id) {
+        oldName = w.name;
         return w.copyWith(name: cleanName);
       }
       return w;
@@ -104,9 +117,23 @@ class WatchlistNotifier extends StateNotifier<WatchlistState> {
 
     state = state.copyWith(watchlists: updated);
     _persist();
+
+    if (oldName != null && oldName != cleanName) {
+      _ref?.read(notificationsProvider.notifier).addNotification(
+            title: 'Watchlist renamed',
+            message: '$oldName renamed to $cleanName',
+            type: NotificationType.watchlist,
+            metadata: {'watchlistId': id},
+          );
+    }
   }
 
   void deleteWatchlist(String id) {
+    String? deletedName;
+    try {
+      deletedName = state.watchlists.firstWhere((w) => w.id == id).name;
+    } catch (_) {}
+
     if (state.watchlists.length <= 1) {
       // Reset the single remaining watchlist to empty symbols
       final reset = state.watchlists.first.copyWith(symbols: []);
@@ -126,6 +153,15 @@ class WatchlistNotifier extends StateNotifier<WatchlistState> {
       activeWatchlistId: newActiveId,
     );
     _persist();
+
+    if (deletedName != null) {
+      _ref?.read(notificationsProvider.notifier).addNotification(
+            title: 'Watchlist deleted',
+            message: '$deletedName watchlist deleted',
+            type: NotificationType.watchlist,
+            metadata: {'watchlistId': id},
+          );
+    }
   }
 
   bool addStockToActiveWatchlist(String symbol) {
@@ -146,6 +182,14 @@ class WatchlistNotifier extends StateNotifier<WatchlistState> {
 
     state = state.copyWith(watchlists: updatedList);
     _persist();
+
+    _ref?.read(notificationsProvider.notifier).addNotification(
+          title: 'Watchlist updated',
+          message: '$symbol added to ${active.name}',
+          type: NotificationType.watchlist,
+          metadata: {'symbol': symbol, 'watchlistId': active.id},
+        );
+
     return true;
   }
 
@@ -168,12 +212,22 @@ class WatchlistNotifier extends StateNotifier<WatchlistState> {
 
     state = state.copyWith(watchlists: updatedList);
     _persist();
+
+    _ref?.read(notificationsProvider.notifier).addNotification(
+          title: 'Watchlist updated',
+          message: '$symbol added to ${active.name}',
+          type: NotificationType.watchlist,
+          metadata: {'symbol': symbol, 'watchlistId': active.id},
+        );
+
     return true;
   }
 
   void removeStockFromActiveWatchlist(String symbol) {
     final active = state.activeWatchlist;
     if (active == null) return;
+
+    if (!active.symbols.contains(symbol)) return;
 
     final updatedSymbols = active.symbols.where((s) => s != symbol).toList();
     final updatedWatchlist = active.copyWith(symbols: updatedSymbols);
@@ -184,11 +238,20 @@ class WatchlistNotifier extends StateNotifier<WatchlistState> {
 
     state = state.copyWith(watchlists: updatedList);
     _persist();
+
+    _ref?.read(notificationsProvider.notifier).addNotification(
+          title: 'Watchlist updated',
+          message: '$symbol removed from ${active.name}',
+          type: NotificationType.watchlist,
+          metadata: {'symbol': symbol, 'watchlistId': active.id},
+        );
   }
 
   void removeStockFromWatchlist(String watchlistId, String symbol) {
+    String? watchlistName;
     final updatedList = state.watchlists.map((w) {
       if (w.id == watchlistId) {
+        watchlistName = w.name;
         final updatedSymbols = w.symbols.where((s) => s != symbol).toList();
         return w.copyWith(symbols: updatedSymbols);
       }
@@ -197,6 +260,15 @@ class WatchlistNotifier extends StateNotifier<WatchlistState> {
 
     state = state.copyWith(watchlists: updatedList);
     _persist();
+
+    if (watchlistName != null) {
+      _ref?.read(notificationsProvider.notifier).addNotification(
+            title: 'Watchlist updated',
+            message: '$symbol removed from $watchlistName',
+            type: NotificationType.watchlist,
+            metadata: {'symbol': symbol, 'watchlistId': watchlistId},
+          );
+    }
   }
 
   void reorderActiveWatchlist(int oldIndex, int newIndex) {
@@ -230,7 +302,7 @@ class WatchlistNotifier extends StateNotifier<WatchlistState> {
 final watchlistProvider =
     StateNotifierProvider<WatchlistNotifier, WatchlistState>((ref) {
   final storage = ref.watch(localStorageServiceProvider);
-  return WatchlistNotifier(storage);
+  return WatchlistNotifier(storage, ref);
 });
 
 final activeWatchlistProvider = Provider<Watchlist?>((ref) {

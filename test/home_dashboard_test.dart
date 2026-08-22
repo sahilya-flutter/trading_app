@@ -87,7 +87,7 @@ void main() {
       await tester.tap(notificationBtn);
       await tester.pumpAndSettle();
       expect(find.text('Notifications'), findsOneWidget);
-      expect(find.text('Market Opening Pulse'), findsOneWidget);
+      expect(find.text('No notifications yet'), findsOneWidget);
 
       // Close notification modal
       await tester.tap(find.byIcon(Icons.close));

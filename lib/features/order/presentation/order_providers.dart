@@ -1,9 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import '../../../core/utils/money_formatter.dart';
 import '../../../core/utils/quantity_utils.dart';
 import '../../../persistence/local_storage_service.dart';
 import '../../holdings/presentation/holdings_providers.dart';
 import '../../market/presentation/market_providers.dart';
+import '../../notifications/domain/notification_item.dart';
+import '../../notifications/presentation/notifications_providers.dart';
 import '../../wallet/presentation/wallet_providers.dart';
 import '../domain/order_model.dart';
 import '../domain/order_side.dart';
@@ -57,6 +60,12 @@ class OrderHistoryNotifier extends StateNotifier<List<OrderModel>> {
       executionPricePaise,
     );
 
+    final qtyFormatted = QuantityUtils.formatQuantity(
+      quantityUnits,
+      trimTrailingZeros: true,
+    );
+    final priceFormatted = MoneyFormatter.formatPaise(executionPricePaise);
+
     if (side == OrderSide.buy) {
       // Validate Wallet Balance
       final currentBalance = _ref.read(walletBalancePaiseProvider);
@@ -72,11 +81,37 @@ class OrderHistoryNotifier extends StateNotifier<List<OrderModel>> {
         return const OrderExecutionResult.failure('Failed to deduct wallet balance');
       }
 
+      final previousHolding = _ref.read(holdingsProvider)[symbol];
+      final isNewHolding = previousHolding == null || previousHolding.quantityUnits <= 0;
+
       // Update Holdings
       _ref.read(holdingsProvider.notifier).recordBuy(
             symbol: symbol,
             quantityUnits: quantityUnits,
             executionPricePaise: executionPricePaise,
+          );
+
+      // Order Notification
+      _ref.read(notificationsProvider.notifier).addNotification(
+            title: 'BUY order completed',
+            message: 'Bought $qtyFormatted $symbol at $priceFormatted',
+            type: NotificationType.orderBuy,
+            metadata: {
+              'symbol': symbol,
+              'side': 'buy',
+              'quantityUnits': quantityUnits,
+              'pricePaise': executionPricePaise,
+            },
+          );
+
+      // Holdings Notification
+      _ref.read(notificationsProvider.notifier).addNotification(
+            title: 'Holdings updated',
+            message: isNewHolding
+                ? '$symbol added to Holdings'
+                : '$symbol holding updated',
+            type: NotificationType.holding,
+            metadata: {'symbol': symbol},
           );
     } else {
       // Validate Sell Holding
@@ -90,6 +125,8 @@ class OrderHistoryNotifier extends StateNotifier<List<OrderModel>> {
         );
       }
 
+      final isHoldingClosed = heldUnits == quantityUnits;
+
       // Update Holdings
       final sold = _ref.read(holdingsProvider.notifier).recordSell(
             symbol: symbol,
@@ -102,6 +139,29 @@ class OrderHistoryNotifier extends StateNotifier<List<OrderModel>> {
 
       // Credit Wallet
       _ref.read(walletProvider.notifier).credit(orderValuePaise);
+
+      // Order Notification
+      _ref.read(notificationsProvider.notifier).addNotification(
+            title: 'SELL order completed',
+            message: 'Sold $qtyFormatted $symbol at $priceFormatted',
+            type: NotificationType.orderSell,
+            metadata: {
+              'symbol': symbol,
+              'side': 'sell',
+              'quantityUnits': quantityUnits,
+              'pricePaise': executionPricePaise,
+            },
+          );
+
+      // Holdings Notification
+      _ref.read(notificationsProvider.notifier).addNotification(
+            title: 'Holdings updated',
+            message: isHoldingClosed
+                ? '$symbol removed from Holdings'
+                : '$symbol holding updated',
+            type: NotificationType.holding,
+            metadata: {'symbol': symbol},
+          );
     }
 
     // 3. Record order in history

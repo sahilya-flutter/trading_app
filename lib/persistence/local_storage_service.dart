@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../core/constants/app_constants.dart';
 import '../features/auth/domain/user_profile.dart';
 import '../features/holdings/domain/holding.dart';
+import '../features/notifications/domain/notification_item.dart';
 import '../features/order/domain/order_model.dart';
 import '../features/wallet/domain/wallet_model.dart';
 import '../features/watchlist/domain/watchlist.dart';
@@ -243,6 +244,42 @@ class LocalStorageService {
       return await _prefs.setInt(StorageKeys.tickRate, rate);
     } catch (e) {
       debugPrint('Error saving tick rate: $e');
+      return false;
+    }
+  }
+
+  // ==================== NOTIFICATIONS ====================
+
+  List<NotificationItem> loadNotifications() {
+    try {
+      final raw = _prefs.getString(StorageKeys.notifications);
+      if (raw != null && raw.isNotEmpty) {
+        final decoded = jsonDecode(raw);
+        if (decoded is List) {
+          return decoded
+              .map((item) {
+                try {
+                  return NotificationItem.fromJson(item as Map<String, dynamic>);
+                } catch (_) {
+                  return null;
+                }
+              })
+              .whereType<NotificationItem>()
+              .toList();
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading notifications from storage: $e');
+    }
+    return [];
+  }
+
+  Future<bool> saveNotifications(List<NotificationItem> notifications) async {
+    try {
+      final jsonList = notifications.map((n) => n.toJson()).toList();
+      return await _prefs.setString(StorageKeys.notifications, jsonEncode(jsonList));
+    } catch (e) {
+      debugPrint('Error saving notifications: $e');
       return false;
     }
   }

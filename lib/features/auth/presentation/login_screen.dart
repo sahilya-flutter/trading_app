@@ -179,17 +179,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                         // Brand block (left-aligned)
                         Container(
-                          width: 44,
-                          height: 44,
+                          width: 48,
+                          height: 48,
                           decoration: BoxDecoration(
-                            color: accentBlue,
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: accentBlue.withValues(alpha: 0.25),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.trending_up,
-                              color: Colors.white,
-                              size: 24,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.asset(
+                              'assets/icon/app_icon.png',
+                              fit: BoxFit.cover,
                             ),
                           ),
                         ),
