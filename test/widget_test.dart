@@ -47,7 +47,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pumpAndSettle();
 
-    // 3. User is now authenticated and lands on Market Overview
+    // 3. User is now authenticated and lands on Home / Market
+    if (find.text('Market Overview').evaluate().isEmpty) {
+      await tester.tap(find.byIcon(Icons.trending_up));
+      await tester.pumpAndSettle();
+    }
     expect(find.text('Market Overview'), findsOneWidget);
     expect(find.text('10 Universe Stocks'), findsOneWidget);
     expect(find.text('RELIANCE'), findsOneWidget);

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../auth/presentation/auth_providers.dart';
 import '../../holdings/presentation/holdings_providers.dart';
 import '../../watchlist/presentation/watchlist_providers.dart';
+import '../../../app/theme/theme_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -325,6 +326,18 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
               ),
+
+              _buildMenuItem(
+                icon: Theme.of(context).brightness == Brightness.dark
+                    ? Icons.light_mode_outlined
+                    : Icons.dark_mode_outlined,
+                label: 'Appearance',
+                value: Theme.of(context).brightness == Brightness.dark
+                    ? 'Dark Mode'
+                    : 'Light Mode',
+                onTap: () => ref.read(themeModeProvider.notifier).toggleTheme(),
+              ),
+              const Divider(height: 1, thickness: 1, color: hairline),
 
               _buildMenuItem(
                 icon: Icons.speed_outlined,

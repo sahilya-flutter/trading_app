@@ -1,39 +1,111 @@
 import 'package:flutter/material.dart';
 
+/// Centralized Design System Tokens for 021 Trading App
+/// Adhering to Stitch Light Theme design system with Dark Theme fallback.
 class AppColors {
   AppColors._();
 
-  // Backgrounds & Surfaces
-  static const Color background = Color(0xFF0B0E14);
-  static const Color surface = Color(0xFF141923);
-  static const Color surfaceHigh = Color(0xFF1D2433);
-  static const Color surfaceElevated = Color(0xFF242C3F);
-  static const Color border = Color(0xFF252D3E);
-  static const Color divider = Color(0xFF1E2536);
+  // --- LIGHT THEME (PRIMARY DESIGN SYSTEM) ---
+  static const Color lightBackground = Color(0xFFF7F8FA);
+  static const Color lightSurface = Color(0xFFFFFFFF);
+  static const Color lightSurfaceHigh = Color(0xFFF1F5F9);
+  static const Color lightSurfaceElevated = Color(0xFFFFFFFF);
+  static const Color lightBorder = Color(0xFFE5E7EB);
+  static const Color lightDivider = Color(0xFFE5E7EB);
 
-  // Brand / Accents
-  static const Color primary = Color(0xFF3B82F6);
-  static const Color primaryLight = Color(0xFF60A5FA);
+  static const Color lightPrimary = Color(0xFF2563EB); // Professional Blue
+  static const Color lightPrimaryLight = Color(0xFF3B82F6);
+  static const Color lightPrimaryContainer = Color(0xFFDBEAFE);
+  static const Color lightOnPrimary = Color(0xFFFFFFFF);
+
+  static const Color lightGain = Color(0xFF16A34A); // Professional Green
+  static const Color lightGainBg = Color(0xFFDCFCE7);
+  static const Color lightGainBorder = Color(0xFF86EFAC);
+
+  static const Color lightLoss = Color(0xFFDC2626); // Professional Red
+  static const Color lightLossBg = Color(0xFFFEE2E2);
+  static const Color lightLossBorder = Color(0xFFFCA5A5);
+
+  static const Color lightTextPrimary = Color(0xFF111827);
+  static const Color lightTextSecondary = Color(0xFF6B7280);
+  static const Color lightTextMuted = Color(0xFF9CA3AF);
+  static const Color lightTextDisabled = Color(0xFFD1D5DB);
+
+  static const Color lightInputFill = Color(0xFFFFFFFF);
+  static const Color lightChipBackground = Color(0xFFF3F4F6);
+
+  // --- DARK THEME (SUPPORTED SECONDARY) ---
+  static const Color darkBackground = Color(0xFF0A141F);
+  static const Color darkSurface = Color(0xFF17202B);
+  static const Color darkSurfaceHigh = Color(0xFF212B36);
+  static const Color darkSurfaceElevated = Color(0xFF2C3641);
+  static const Color darkBorder = Color(0xFF414754);
+  static const Color darkDivider = Color(0xFF2B3642);
+
+  static const Color darkPrimary = Color(0xFFADC7FF);
+  static const Color darkPrimaryLight = Color(0xFF4A8EFF);
+  static const Color darkPrimaryContainer = Color(0xFF004493);
+  static const Color darkOnPrimary = Color(0xFF002E68);
+
+  static const Color darkGain = Color(0xFF57DEA3);
+  static const Color darkGainBg = Color(0xFF003824);
+  static const Color darkGainBorder = Color(0xFF005236);
+
+  static const Color darkLoss = Color(0xFFFFB4AB);
+  static const Color darkLossBg = Color(0xFF690005);
+  static const Color darkLossBorder = Color(0xFF93000A);
+
+  static const Color darkTextPrimary = Color(0xFFD9E3F3);
+  static const Color darkTextSecondary = Color(0xFFC1C6D7);
+  static const Color darkTextMuted = Color(0xFF8B90A0);
+  static const Color darkTextDisabled = Color(0xFF5E6573);
+
+  static const Color darkInputFill = Color(0xFF17202B);
+  static const Color darkChipBackground = Color(0xFF212B36);
+
+  // --- LEGACY COMPATIBILITY ALIASES (Dynamic according to context or dark/light defaults) ---
+  static const Color background = lightBackground;
+  static const Color surface = lightSurface;
+  static const Color surfaceHigh = lightSurfaceHigh;
+  static const Color surfaceElevated = lightSurfaceElevated;
+  static const Color border = lightBorder;
+  static const Color divider = lightDivider;
+
+  static const Color primary = lightPrimary;
+  static const Color primaryLight = lightPrimaryLight;
   static const Color primaryDark = Color(0xFF1D4ED8);
 
-  // Trading status colors
-  static const Color gain = Color(0xFF00D084);
-  static const Color gainBg = Color(0xFF0C2B20);
-  static const Color gainBorder = Color(0xFF155E44);
+  static const Color gain = lightGain;
+  static const Color gainBg = lightGainBg;
+  static const Color gainBorder = lightGainBorder;
 
-  static const Color loss = Color(0xFFFF4B55);
-  static const Color lossBg = Color(0xFF331518);
-  static const Color lossBorder = Color(0xFF751C22);
+  static const Color loss = lightLoss;
+  static const Color lossBg = lightLossBg;
+  static const Color lossBorder = lightLossBorder;
 
-  static const Color neutral = Color(0xFF94A3B8);
+  static const Color neutral = lightTextSecondary;
+  static const Color textPrimary = lightTextPrimary;
+  static const Color textSecondary = lightTextSecondary;
+  static const Color textMuted = lightTextMuted;
+  static const Color textDisabled = lightTextDisabled;
 
-  // Text colors
-  static const Color textPrimary = Color(0xFFF1F5F9);
-  static const Color textSecondary = Color(0xFF94A3B8);
-  static const Color textMuted = Color(0xFF64748B);
-  static const Color textDisabled = Color(0xFF475569);
+  static const Color inputFill = lightInputFill;
+  static const Color chipBackground = lightChipBackground;
 
-  // Chip & Input
-  static const Color inputFill = Color(0xFF161C28);
-  static const Color chipBackground = Color(0xFF1E2538);
+  // Stitch Design System Tokens
+  static const Color stitchSurface = darkBackground;
+  static const Color stitchSurfaceContainer = darkSurface;
+  static const Color stitchSurfaceContainerHigh = darkSurfaceHigh;
+  static const Color stitchSurfaceContainerHighest = darkSurfaceElevated;
+  static const Color stitchOutline = darkTextMuted;
+  static const Color stitchOutlineVariant = darkBorder;
+  static const Color stitchPrimary = darkPrimary;
+  static const Color stitchOnPrimary = darkOnPrimary;
+  static const Color stitchPrimaryContainer = darkPrimaryLight;
+  static const Color stitchSecondary = darkGain;
+  static const Color stitchOnSecondary = Color(0xFF003824);
+  static const Color stitchError = darkLoss;
+  static const Color stitchOnError = Color(0xFF690005);
+  static const Color stitchOnSurface = darkTextPrimary;
+  static const Color stitchOnSurfaceVariant = darkTextSecondary;
 }

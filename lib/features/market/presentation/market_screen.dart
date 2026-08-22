@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
+import '../../../app/theme/theme_provider.dart';
 import '../../auth/presentation/auth_providers.dart';
 import 'market_providers.dart';
 import 'widgets/market_price_row.dart';
@@ -39,7 +40,9 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        titleSpacing: 12,
         title: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: 8,
@@ -49,31 +52,40 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: (isStressMode ? Colors.amber : AppColors.gain).withValues(alpha: 0.6),
+                    color: (isStressMode ? Colors.amber : AppColors.gain)
+                        .withValues(alpha: 0.6),
                     blurRadius: 6,
                     spreadRadius: 2,
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            const Text('Market Overview'),
+            const SizedBox(width: 6),
+            const Text(
+              'Market Overview',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ],
         ),
         actions: [
           // Stress Mode Button Chip
           Padding(
-            padding: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.only(right: 4),
             child: FilterChip(
+              visualDensity: VisualDensity.compact,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               avatar: Icon(
                 isStressMode ? Icons.bolt : Icons.speed,
-                size: 16,
+                size: 14,
                 color: isStressMode ? Colors.amber : AppColors.textSecondary,
               ),
               label: Text(
                 isStressMode ? '50+ t/s' : 'Feed',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: isStressMode ? Colors.amber : AppColors.textSecondary,
                 ),
@@ -82,7 +94,9 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
               selectedColor: Colors.amber.withValues(alpha: 0.15),
               backgroundColor: AppColors.surfaceElevated,
               side: BorderSide(
-                color: isStressMode ? Colors.amber.withValues(alpha: 0.5) : AppColors.border,
+                color: isStressMode
+                    ? Colors.amber.withValues(alpha: 0.5)
+                    : AppColors.border,
               ),
               onSelected: (val) {
                 ref.read(stressModeProvider.notifier).toggle();
@@ -90,9 +104,28 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
             ),
           ),
 
+          // Theme Toggle Icon Button
+          IconButton(
+            visualDensity: VisualDensity.compact,
+            padding: const EdgeInsets.all(4),
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            onPressed: () {
+              ref.read(themeModeProvider.notifier).toggleTheme();
+            },
+            tooltip: Theme.of(context).brightness == Brightness.dark
+                ? 'Switch to Light theme'
+                : 'Switch to Dark theme',
+            icon: Icon(
+              Theme.of(context).brightness == Brightness.dark
+                  ? Icons.light_mode_outlined
+                  : Icons.dark_mode_outlined,
+              size: 20,
+            ),
+          ),
+
           // User Profile Avatar with Google Photo / Initials
           Padding(
-            padding: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.only(right: 8),
             child: InkWell(
               onTap: () => context.push('/profile'),
               borderRadius: BorderRadius.circular(18),
