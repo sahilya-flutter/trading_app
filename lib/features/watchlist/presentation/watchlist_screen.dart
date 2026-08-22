@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../app/theme/app_colors.dart';
 import 'watchlist_providers.dart';
 import 'widgets/add_stock_sheet.dart';
 import 'widgets/watchlist_row.dart';
@@ -37,44 +38,50 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
 
   void _showCreateWatchlistDialog(BuildContext context) {
     final textController = TextEditingController();
+    final colors = context.colors;
+
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
+        backgroundColor: colors.surfaceElevated,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: colors.border),
+        ),
+        title: Text(
           'Create Watchlist',
           style: TextStyle(
+            fontFamily: 'Hanken Grotesk',
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF0E1621),
+            color: colors.textPrimary,
           ),
         ),
         content: TextField(
           controller: textController,
           autofocus: true,
+          style: TextStyle(color: colors.textPrimary),
           decoration: InputDecoration(
             hintText: 'e.g. Banking, IT Stocks, Auto',
-            hintStyle: const TextStyle(color: Color(0xFF9AA4B0), fontSize: 14),
+            hintStyle: TextStyle(color: colors.textMuted, fontSize: 14),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: BorderSide(color: colors.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide:
-                  const BorderSide(color: Color(0xFF1F4FD8), width: 1.5),
+              borderSide: BorderSide(color: colors.primary, width: 1.5),
             ),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(
+            child: Text(
               'Cancel',
-              style: TextStyle(color: Color(0xFF65707D)),
+              style: TextStyle(color: colors.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -86,14 +93,14 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1F4FD8),
+              backgroundColor: colors.primary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text(
+            child: Text(
               'Create',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+              style: TextStyle(color: colors.onPrimary, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -107,26 +114,28 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
     final activeWatchlist = watchlistState.activeWatchlist;
     final watchlists = watchlistState.watchlists;
     final symbols = activeWatchlist?.symbols ?? [];
+    final colors = context.colors;
 
-    const accentBlue = Color(0xFF1F4FD8);
-    const textDark = Color(0xFF0E1621);
-    const textMuted = Color(0xFF64748B);
-    const inactivePillBg = Color(0xFFD9E2EC);
-    const borderGrey = Color(0xFFE2E8F0);
-    const hairline = Color(0xFFF1F5F9);
+    final accentBlue = colors.primary;
+    final textDark = colors.textPrimary;
+    final textMuted = colors.textSecondary;
+    final inactivePillBg = colors.chipBackground;
+    final borderGrey = colors.border;
+    final hairline = colors.divider;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top: Plain header reading "Watchlist" in 24 bold, no back arrow, no icons
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 20, 16, 16),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
               child: Text(
                 'Watchlist',
                 style: TextStyle(
+                  fontFamily: 'Hanken Grotesk',
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
                   color: textDark,
@@ -171,11 +180,12 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
                                 child: Text(
                                   wl.name,
                                   style: TextStyle(
+                                    fontFamily: 'Inter',
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                     color: isActive
-                                        ? Colors.white
-                                        : const Color(0xFF334155),
+                                        ? colors.onPrimary
+                                        : colors.textPrimary,
                                   ),
                                 ),
                               ),
@@ -197,10 +207,10 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
                         height: 36,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: const Color(0xFFF8FAFC),
+                          color: colors.chipBackground,
                           border: Border.all(color: borderGrey),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.add,
                           size: 20,
                           color: textMuted,
@@ -218,10 +228,10 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
                       height: 36,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: const Color(0xFFF8FAFC),
+                        color: colors.chipBackground,
                         border: Border.all(color: borderGrey),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.more_horiz,
                         size: 20,
                         color: textMuted,
@@ -234,17 +244,18 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
 
             const SizedBox(height: 14),
 
-            // Column header strip: a 32pt band in #F8FAFC with uppercase grey labels
+            // Column header strip: a 32pt band in surfaceHigh with uppercase grey labels
             Container(
               height: 32,
-              color: const Color(0xFFF8FAFC),
+              color: colors.chipBackground,
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     'SYMBOL',
                     style: TextStyle(
+                      fontFamily: 'Inter',
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: textMuted,
@@ -254,6 +265,7 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
                   Text(
                     'LTP / CHG',
                     style: TextStyle(
+                      fontFamily: 'Inter',
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: textMuted,
@@ -291,7 +303,7 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
                                     context.push('/order?symbol=$sym');
                                   },
                                 ),
-                                const Divider(
+                                Divider(
                                   height: 1,
                                   thickness: 1,
                                   color: hairline,
@@ -309,8 +321,8 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
                               child: OutlinedButton(
                                 onPressed: () => _openAddStocks(context),
                                 style: OutlinedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  side: const BorderSide(
+                                  backgroundColor: colors.surface,
+                                  side: BorderSide(
                                     color: borderGrey,
                                     width: 1.2,
                                   ),
@@ -319,7 +331,7 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
                                   ),
                                   elevation: 0,
                                 ),
-                                child: const Row(
+                                child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(
@@ -327,10 +339,11 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
                                       size: 20,
                                       color: textDark,
                                     ),
-                                    SizedBox(width: 8),
+                                    const SizedBox(width: 8),
                                     Text(
                                       'Add stocks',
                                       style: TextStyle(
+                                        fontFamily: 'Inter',
                                         fontSize: 16,
                                         fontWeight: FontWeight.w600,
                                         color: textDark,
@@ -352,6 +365,7 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
   }
 
   Widget _buildEmptyState(BuildContext context) {
+    final colors = context.colors;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -361,32 +375,34 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
             Container(
               width: 64,
               height: 64,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Color(0xFFF1F5F9),
+                color: colors.chipBackground,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.playlist_add,
                 size: 32,
-                color: Color(0xFF94A3B8),
+                color: colors.textMuted,
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'No stocks yet',
               style: TextStyle(
+                fontFamily: 'Hanken Grotesk',
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF0E1621),
+                color: colors.textPrimary,
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Add stocks to this watchlist to track live prices.',
               textAlign: TextAlign.center,
               style: TextStyle(
+                fontFamily: 'Inter',
                 fontSize: 14,
-                color: Color(0xFF64748B),
+                color: colors.textSecondary,
               ),
             ),
             const SizedBox(height: 24),
@@ -394,17 +410,18 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
               height: 44,
               child: ElevatedButton.icon(
                 onPressed: () => _openAddStocks(context),
-                icon: const Icon(Icons.add, size: 18, color: Colors.white),
-                label: const Text(
+                icon: Icon(Icons.add, size: 18, color: colors.onPrimary),
+                label: Text(
                   'Add stocks',
                   style: TextStyle(
+                    fontFamily: 'Inter',
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: colors.onPrimary,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1F4FD8),
+                  backgroundColor: colors.primary,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   shape: RoundedRectangleBorder(

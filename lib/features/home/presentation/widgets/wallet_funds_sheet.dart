@@ -19,13 +19,13 @@ class WalletFundsSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final balancePaise = ref.watch(walletBalancePaiseProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
-    final sheetBg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final onSurface = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-    final onSurfaceVariant = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
-    final outlineVariant = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final primaryColor = isDark ? AppColors.darkPrimaryLight : AppColors.lightPrimary;
+    final sheetBg = colors.surface;
+    final onSurface = colors.textPrimary;
+    final onSurfaceVariant = colors.textSecondary;
+    final outlineVariant = colors.border;
+    final primaryColor = colors.primary;
 
     return Container(
       decoration: BoxDecoration(
@@ -82,7 +82,7 @@ class WalletFundsSheet extends ConsumerWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? AppColors.stitchSurface : const Color(0xFFF8FAFC),
+              color: colors.chipBackground,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(color: outlineVariant, width: 1),
             ),
@@ -107,6 +107,7 @@ class WalletFundsSheet extends ConsumerWidget {
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
                     color: onSurface,
+                    fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
               ],
@@ -153,6 +154,7 @@ class WalletFundsSheet extends ConsumerWidget {
               label: Text(
                 'Reset Default Balance (₹1,00,000)',
                 style: TextStyle(
+                  fontFamily: 'Inter',
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: primaryColor,
@@ -171,7 +173,7 @@ class WalletFundsSheet extends ConsumerWidget {
     String label,
     int paise,
   ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
     return Expanded(
       child: OutlinedButton(
         onPressed: () {
@@ -185,9 +187,7 @@ class WalletFundsSheet extends ConsumerWidget {
         },
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 12),
-          side: BorderSide(
-            color: isDark ? AppColors.stitchOutlineVariant : const Color(0xFFCBD5E1),
-          ),
+          side: BorderSide(color: colors.border),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
@@ -198,7 +198,7 @@ class WalletFundsSheet extends ConsumerWidget {
             fontFamily: 'Inter',
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: isDark ? AppColors.stitchPrimary : const Color(0xFF1F4FD8),
+            color: colors.primary,
           ),
         ),
       ),

@@ -8,19 +8,23 @@ class LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const CircularProgressIndicator(
-            color: AppColors.primary,
+          CircularProgressIndicator(
+            color: colors.primary,
             strokeWidth: 3,
           ),
           if (message != null) ...[
             const SizedBox(height: 16),
             Text(
               message!,
-              style: AppTextStyles.bodyMedium,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: colors.textSecondary,
+              ),
             ),
           ],
         ],
@@ -41,22 +45,28 @@ class ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 48, color: AppColors.loss),
+            Icon(Icons.error_outline, size: 48, color: colors.loss),
             const SizedBox(height: 16),
             Text(
               'Something went wrong',
-              style: AppTextStyles.headingSmall,
+              style: AppTextStyles.headingSmall.copyWith(
+                color: colors.textPrimary,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               message,
-              style: AppTextStyles.bodyMedium,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: colors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             if (onRetry != null) ...[

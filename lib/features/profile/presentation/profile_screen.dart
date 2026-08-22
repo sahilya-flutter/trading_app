@@ -1,53 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/theme_provider.dart';
 import '../../auth/presentation/auth_providers.dart';
 import '../../holdings/presentation/holdings_providers.dart';
 import '../../watchlist/presentation/watchlist_providers.dart';
-import '../../../app/theme/theme_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+    final colors = context.colors;
     showDialog<void>(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.54),
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: colors.surfaceElevated,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: colors.border),
         ),
         titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
         contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        title: const Text(
+        title: Text(
           'Log out?',
           style: TextStyle(
+            fontFamily: 'Hanken Grotesk',
             fontSize: 17,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF0E1621),
+            color: colors.textPrimary,
             letterSpacing: -0.2,
           ),
         ),
-        content: const Text(
+        content: Text(
           'Your watchlists and holdings stay saved on this device.',
           style: TextStyle(
+            fontFamily: 'Inter',
             fontSize: 14,
-            color: Color(0xFF65707D),
+            color: colors.textSecondary,
             height: 1.4,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: TextStyle(
+                fontFamily: 'Inter',
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF65707D),
+                color: colors.textSecondary,
               ),
             ),
           ),
@@ -61,19 +67,20 @@ class ProfileScreen extends ConsumerWidget {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD93025),
+              backgroundColor: colors.loss,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text(
+            child: Text(
               'Log out',
               style: TextStyle(
+                fontFamily: 'Inter',
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: colors.onPrimary,
               ),
             ),
           ),
@@ -86,31 +93,34 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final watchlistState = ref.watch(watchlistProvider);
     final holdings = ref.watch(holdingsProvider);
+    final colors = context.colors;
+    final isDark = context.isDark;
 
     final holdingsCount = holdings.values.where((h) => h.quantityUnits > 0).length;
     final watchlistCount = watchlistState.watchlists.length;
 
-    const textDark = Color(0xFF0E1621);
-    const textGrey = Color(0xFF65707D);
-    const borderGrey = Color(0xFFE3E7ED);
-    const cardBg = Color(0xFFF7F8FA);
-    const chevronColor = Color(0xFF9AA4B0);
-    const errorRed = Color(0xFFD93025);
-    const hairline = Color(0xFFECEFF2);
+    final textDark = colors.textPrimary;
+    final textGrey = colors.textSecondary;
+    final borderGrey = colors.border;
+    final cardBg = colors.surfaceElevated;
+    final chevronColor = colors.textMuted;
+    final errorRed = colors.loss;
+    final hairline = colors.divider;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colors.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: textDark, size: 22),
+          icon: Icon(Icons.arrow_back, color: textDark, size: 22),
           onPressed: () => context.pop(),
         ),
-        title: const Text(
+        title: Text(
           'Profile',
           style: TextStyle(
+            fontFamily: 'Hanken Grotesk',
             fontSize: 20,
             fontWeight: FontWeight.w600,
             color: textDark,
@@ -138,21 +148,22 @@ class ProfileScreen extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    // 48pt circle filled #EEF1F5 containing initials "RS" in 18 semibold #1F4FD8
+                    // 48pt circle filled container containing initials "RS"
                     Container(
                       width: 48,
                       height: 48,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Color(0xFFEEF1F5),
+                        color: colors.chipBackground,
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
                           'RS',
                           style: TextStyle(
+                            fontFamily: 'Hanken Grotesk',
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF1F4FD8),
+                            color: colors.primary,
                           ),
                         ),
                       ),
@@ -160,31 +171,34 @@ class ProfileScreen extends ConsumerWidget {
                     const SizedBox(width: 14),
 
                     // Stacked name, phone, Client ID
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Rahul Sharma',
                             style: TextStyle(
+                              fontFamily: 'Inter',
                               fontSize: 17,
                               fontWeight: FontWeight.w600,
                               color: textDark,
                               letterSpacing: -0.2,
                             ),
                           ),
-                          SizedBox(height: 2),
+                          const SizedBox(height: 2),
                           Text(
                             '+91 98765 43210',
                             style: TextStyle(
+                              fontFamily: 'Inter',
                               fontSize: 13,
                               color: textGrey,
                             ),
                           ),
-                          SizedBox(height: 3),
+                          const SizedBox(height: 3),
                           Text(
                             'Client ID · 021RS4821',
                             style: TextStyle(
+                              fontFamily: 'Inter',
                               fontSize: 11,
                               color: chevronColor,
                               fontWeight: FontWeight.w500,
@@ -199,7 +213,7 @@ class ProfileScreen extends ConsumerWidget {
 
               const SizedBox(height: 12),
 
-              // Block 2 — Wallet Strip: immediately below, #F7F8FA, split into two halves by 1px vertical divider
+              // Block 2 — Wallet Strip: immediately below, split into two halves by 1px vertical divider
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
@@ -212,27 +226,29 @@ class ProfileScreen extends ConsumerWidget {
                   child: Row(
                     children: [
                       // Left half: AVAILABLE BALANCE
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'AVAILABLE BALANCE',
                               style: TextStyle(
+                                fontFamily: 'Inter',
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: textGrey,
                                 letterSpacing: 0.4,
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
                               '₹9,64,487.50',
                               style: TextStyle(
+                                fontFamily: 'JetBrains Mono',
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
                                 color: textDark,
-                                fontFeatures: [
+                                fontFeatures: const [
                                   FontFeature.tabularFigures()
                                 ],
                               ),
@@ -249,27 +265,29 @@ class ProfileScreen extends ConsumerWidget {
                       ),
 
                       // Right half, right-aligned: INVESTED
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
                               'INVESTED',
                               style: TextStyle(
+                                fontFamily: 'Inter',
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                                 color: textGrey,
                                 letterSpacing: 0.4,
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
                               '₹3,64,820.00',
                               style: TextStyle(
+                                fontFamily: 'JetBrains Mono',
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
                                 color: textDark,
-                                fontFeatures: [
+                                fontFeatures: const [
                                   FontFeature.tabularFigures()
                                 ],
                               ),
@@ -284,41 +302,45 @@ class ProfileScreen extends ConsumerWidget {
 
               const SizedBox(height: 16),
 
-              // Block 3 — Menu List: Plain white list with 1px hairline dividers, rows 56pt tall
+              // Block 3 — Menu List: Plain list with 1px hairline dividers, rows 56pt tall
               _buildMenuItem(
+                context: context,
                 icon: Icons.receipt_long_outlined,
                 label: 'Order history',
                 value: '142 orders',
                 onTap: () {},
               ),
-              const Divider(height: 1, thickness: 1, color: hairline),
+              Divider(height: 1, thickness: 1, color: hairline),
 
               _buildMenuItem(
+                context: context,
                 icon: Icons.pie_chart_outline,
                 label: 'Holdings',
                 value: holdingsCount > 0 ? '$holdingsCount stocks' : '7 stocks',
                 onTap: () => context.go('/holdings'),
               ),
-              const Divider(height: 1, thickness: 1, color: hairline),
+              Divider(height: 1, thickness: 1, color: hairline),
 
               _buildMenuItem(
+                context: context,
                 icon: Icons.bookmark_outline,
                 label: 'My watchlists',
                 value: watchlistCount > 0 ? '$watchlistCount lists' : '3 lists',
                 onTap: () => context.go('/watchlist'),
               ),
-              const Divider(height: 1, thickness: 1, color: hairline),
+              Divider(height: 1, thickness: 1, color: hairline),
 
-              // PREFERENCES 32pt band in #F7F8FA
+              // PREFERENCES 32pt band in chipBackground
               Container(
                 height: 32,
                 width: double.infinity,
-                color: cardBg,
+                color: colors.chipBackground,
                 alignment: Alignment.centerLeft,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: const Text(
+                child: Text(
                   'PREFERENCES',
                   style: TextStyle(
+                    fontFamily: 'Inter',
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                     color: textGrey,
@@ -328,32 +350,35 @@ class ProfileScreen extends ConsumerWidget {
               ),
 
               _buildMenuItem(
-                icon: Theme.of(context).brightness == Brightness.dark
+                context: context,
+                icon: isDark
                     ? Icons.light_mode_outlined
                     : Icons.dark_mode_outlined,
                 label: 'Appearance',
-                value: Theme.of(context).brightness == Brightness.dark
+                value: isDark
                     ? 'Dark Mode'
                     : 'Light Mode',
                 onTap: () => ref.read(themeModeProvider.notifier).toggleTheme(),
               ),
-              const Divider(height: 1, thickness: 1, color: hairline),
+              Divider(height: 1, thickness: 1, color: hairline),
 
               _buildMenuItem(
+                context: context,
                 icon: Icons.speed_outlined,
                 label: 'Tick rate',
                 value: '5 / sec',
                 onTap: () {},
               ),
-              const Divider(height: 1, thickness: 1, color: hairline),
+              Divider(height: 1, thickness: 1, color: hairline),
 
               _buildMenuItem(
+                context: context,
                 icon: Icons.info_outline,
                 label: 'About',
                 value: 'v1.0.0',
                 onTap: () {},
               ),
-              const Divider(height: 1, thickness: 1, color: hairline),
+              Divider(height: 1, thickness: 1, color: hairline),
 
               // Bottom Section: 24pt gap, then full-width 52pt button
               const SizedBox(height: 24),
@@ -365,16 +390,17 @@ class ProfileScreen extends ConsumerWidget {
                   child: OutlinedButton(
                     onPressed: () => _showLogoutDialog(context, ref),
                     style: OutlinedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      side: const BorderSide(color: errorRed, width: 1),
+                      backgroundColor: colors.surface,
+                      side: BorderSide(color: errorRed, width: 1),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
+                    child: Text(
                       'Log out',
                       style: TextStyle(
+                        fontFamily: 'Inter',
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: errorRed,
@@ -384,13 +410,14 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ),
 
-              // Below it, centred 11pt #9AA4B0 line
-              const Center(
+              // Below it, centred 11pt footer line
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.only(top: 14, bottom: 24),
+                  padding: const EdgeInsets.only(top: 14, bottom: 24),
                   child: Text(
                     'Simulated trading. No real money involved.',
                     style: TextStyle(
+                      fontFamily: 'Inter',
                       fontSize: 11,
                       color: chevronColor,
                     ),
@@ -405,13 +432,15 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   Widget _buildMenuItem({
+    required BuildContext context,
     required IconData icon,
     required String label,
     String? value,
     required VoidCallback onTap,
   }) {
+    final colors = context.colors;
     return Material(
-      color: Colors.white,
+      color: colors.surface,
       child: InkWell(
         onTap: onTap,
         child: SizedBox(
@@ -423,33 +452,35 @@ class ProfileScreen extends ConsumerWidget {
                 Icon(
                   icon,
                   size: 20,
-                  color: const Color(0xFF65707D),
+                  color: colors.textSecondary,
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(
                     label,
-                    style: const TextStyle(
+                    style: TextStyle(
+                      fontFamily: 'Inter',
                       fontSize: 15,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF0E1621),
+                      color: colors.textPrimary,
                     ),
                   ),
                 ),
                 if (value != null) ...[
                   Text(
                     value,
-                    style: const TextStyle(
+                    style: TextStyle(
+                      fontFamily: 'Inter',
                       fontSize: 13,
-                      color: Color(0xFF65707D),
+                      color: colors.textSecondary,
                     ),
                   ),
                   const SizedBox(width: 8),
                 ],
-                const Icon(
+                Icon(
                   Icons.chevron_right,
                   size: 18,
-                  color: Color(0xFF9AA4B0),
+                  color: colors.textMuted,
                 ),
               ],
             ),

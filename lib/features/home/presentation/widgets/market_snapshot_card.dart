@@ -13,15 +13,15 @@ class MarketSnapshotCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final prices = ref.watch(marketPricesProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
-    final onSurface = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-    final onSurfaceVariant = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
-    final cardBg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final cardBorder = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
-    final secondaryColor = isDark ? AppColors.darkGain : AppColors.lightGain;
-    final errorColor = isDark ? AppColors.darkLoss : AppColors.lightLoss;
+    final onSurface = colors.textPrimary;
+    final onSurfaceVariant = colors.textSecondary;
+    final cardBg = colors.surface;
+    final cardBorder = colors.border;
+    final primaryColor = colors.primary;
+    final secondaryColor = colors.gain;
+    final errorColor = colors.loss;
 
     // Top 3 featured snapshot stocks matching Stitch design
     final symbols = ['RELIANCE', 'TCS', 'INFY'];
@@ -84,19 +84,19 @@ class MarketSnapshotCard extends ConsumerWidget {
                     context: context,
                     symbol: symbol,
                     tick: tick,
-                    isDark: isDark,
                     onSurface: onSurface,
                     onSurfaceVariant: onSurfaceVariant,
                     cardBorder: cardBorder,
                     primaryColor: primaryColor,
                     secondaryColor: secondaryColor,
                     errorColor: errorColor,
+                    chipBg: colors.chipBackground,
                   ),
                   if (!isLast)
                     Divider(
                       height: 1,
                       thickness: 1,
-                      color: cardBorder.withValues(alpha: 0.3),
+                      color: cardBorder.withValues(alpha: 0.5),
                     ),
                 ],
               );
@@ -111,13 +111,13 @@ class MarketSnapshotCard extends ConsumerWidget {
     required BuildContext context,
     required String symbol,
     required PriceTick? tick,
-    required bool isDark,
     required Color onSurface,
     required Color onSurfaceVariant,
     required Color cardBorder,
     required Color primaryColor,
     required Color secondaryColor,
     required Color errorColor,
+    required Color chipBg,
   }) {
     final ltpPaise = tick?.ltpPaise ?? 0;
     final changePercent = tick?.changePercent ?? 0.0;
@@ -145,9 +145,7 @@ class MarketSnapshotCard extends ConsumerWidget {
                     height: 32,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? AppColors.stitchSurface
-                          : const Color(0xFFF1F5F9),
+                      color: chipBg,
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(
                         color: cardBorder.withValues(alpha: 0.8),
@@ -190,6 +188,7 @@ class MarketSnapshotCard extends ConsumerWidget {
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: onSurface,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -200,6 +199,7 @@ class MarketSnapshotCard extends ConsumerWidget {
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                       color: changeColor,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
                 ],

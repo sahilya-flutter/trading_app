@@ -12,11 +12,11 @@ class QuickActionsGrid extends ConsumerWidget {
     showDialog<void>(
       context: context,
       builder: (ctx) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        final dialogBg = isDark ? AppColors.stitchSurfaceContainer : Colors.white;
-        final onSurface = isDark ? AppColors.stitchOnSurface : const Color(0xFF0E1621);
-        final onSurfaceVariant = isDark ? AppColors.stitchOnSurfaceVariant : const Color(0xFF65707D);
-        final outlineVariant = isDark ? AppColors.stitchOutlineVariant : const Color(0xFFE2E8F0);
+        final colors = context.colors;
+        final dialogBg = colors.surfaceElevated;
+        final onSurface = colors.textPrimary;
+        final onSurfaceVariant = colors.textSecondary;
+        final outlineVariant = colors.border;
 
         return AlertDialog(
           backgroundColor: dialogBg,
@@ -42,7 +42,7 @@ class QuickActionsGrid extends ConsumerWidget {
               itemCount: StockConstants.initialStocks.length,
               separatorBuilder: (context, index) => Divider(
                 height: 1,
-                color: outlineVariant.withValues(alpha: 0.4),
+                color: outlineVariant.withValues(alpha: 0.5),
               ),
               itemBuilder: (context, index) {
                 final stock = StockConstants.initialStocks[index];
@@ -53,7 +53,7 @@ class QuickActionsGrid extends ConsumerWidget {
                     height: 32,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.stitchSurface : const Color(0xFFF1F5F9),
+                      color: colors.chipBackground,
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(color: outlineVariant),
                     ),
@@ -63,7 +63,7 @@ class QuickActionsGrid extends ConsumerWidget {
                         fontFamily: 'Inter',
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: isDark ? AppColors.stitchPrimary : const Color(0xFF1F4FD8),
+                        color: colors.primary,
                       ),
                     ),
                   ),
@@ -106,18 +106,18 @@ class QuickActionsGrid extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
-    final secondaryBg = isDark ? AppColors.darkGain : AppColors.lightGain;
-    final onSecondary = isDark ? AppColors.darkOnPrimary : Colors.white;
+    final secondaryBg = colors.gain;
+    final onSecondary = colors.onPrimary;
 
-    final errorBg = isDark ? AppColors.darkLoss : AppColors.lightLoss;
-    final onError = isDark ? AppColors.stitchOnError : Colors.white;
+    final errorBg = colors.loss;
+    final onError = colors.onPrimary;
 
-    final cardBg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final cardBorder = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final onSurfaceVariant = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
-    final primaryIconColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
+    final cardBg = colors.surface;
+    final cardBorder = colors.border;
+    final onSurfaceVariant = colors.textSecondary;
+    final primaryIconColor = colors.primary;
 
     return LayoutBuilder(
       builder: (context, constraints) {

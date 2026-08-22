@@ -146,12 +146,12 @@ class ScaffoldWithBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selectedIndex = _calculateSelectedIndex(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
-    final activeColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
-    final inactiveColor = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
-    final navBg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final borderColor = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+    final activeColor = colors.primary;
+    final inactiveColor = colors.textSecondary;
+    final navBg = colors.surface;
+    final borderColor = colors.border;
 
     return Scaffold(
       body: child,

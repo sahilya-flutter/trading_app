@@ -27,13 +27,14 @@ class HomeDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authStateProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.isDark;
+    final colors = context.colors;
 
-    final bgColor = isDark ? AppColors.darkBackground : AppColors.lightBackground;
-    final onSurface = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-    final onSurfaceVariant = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
-    final outlineVariant = isDark ? AppColors.darkBorder : AppColors.lightBorder;
+    final bgColor = colors.background;
+    final onSurface = colors.textPrimary;
+    final onSurfaceVariant = colors.textSecondary;
+    final primaryColor = colors.primary;
+    final outlineVariant = colors.border;
 
     final String displayName = (user?.displayName != null && user!.displayName!.isNotEmpty)
         ? user.displayName!.split(' ').first
@@ -72,9 +73,7 @@ class HomeDashboardScreen extends ConsumerWidget {
                           children: [
                             CircleAvatar(
                               radius: 17,
-                              backgroundColor: isDark
-                                  ? AppColors.stitchSurfaceContainerHighest
-                                  : const Color(0xFFE2E8F0),
+                              backgroundColor: colors.chipBackground,
                               backgroundImage: user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty
                                   ? NetworkImage(user.avatarUrl!)
                                   : null,
@@ -141,9 +140,7 @@ class HomeDashboardScreen extends ConsumerWidget {
                                     width: 8,
                                     height: 8,
                                     decoration: BoxDecoration(
-                                      color: isDark
-                                          ? AppColors.stitchSecondary
-                                          : const Color(0xFF059669),
+                                      color: colors.gain,
                                       shape: BoxShape.circle,
                                     ),
                                   ),

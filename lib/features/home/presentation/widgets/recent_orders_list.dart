@@ -14,14 +14,14 @@ class RecentOrdersList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final orders = ref.watch(orderHistoryProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
-    final onSurface = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-    final onSurfaceVariant = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
-    final cardBg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final cardBorder = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final secondaryColor = isDark ? AppColors.darkGain : AppColors.lightGain;
-    final errorColor = isDark ? AppColors.darkLoss : AppColors.lightLoss;
+    final onSurface = colors.textPrimary;
+    final onSurfaceVariant = colors.textSecondary;
+    final cardBg = colors.surface;
+    final cardBorder = colors.border;
+    final secondaryColor = colors.gain;
+    final errorColor = colors.loss;
 
     // If no real orders yet, we show the default Stitch demo completed order
     final hasRealOrders = orders.isNotEmpty;
@@ -176,6 +176,7 @@ class RecentOrdersList extends ConsumerWidget {
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                           color: onSurface,
+                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
                     ],
@@ -187,6 +188,7 @@ class RecentOrdersList extends ConsumerWidget {
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: onSurface,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
                 ],
@@ -293,6 +295,7 @@ class RecentOrdersList extends ConsumerWidget {
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                           color: onSurface,
+                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
                     ],
@@ -304,6 +307,7 @@ class RecentOrdersList extends ConsumerWidget {
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: onSurface,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
                 ],

@@ -13,28 +13,29 @@ class PortfolioSummaryCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final summary = ref.watch(portfolioSummaryProvider);
     final walletBalance = ref.watch(walletBalancePaiseProvider);
+    final colors = context.colors;
 
     final isProfit = summary.totalPnlPaise >= 0;
-    final pnlColor = isProfit ? AppColors.gain : AppColors.loss;
-    final pnlBg = isProfit ? AppColors.gainBg : AppColors.lossBg;
-    final pnlBorder = isProfit ? AppColors.gainBorder : AppColors.lossBorder;
+    final pnlColor = isProfit ? colors.gain : colors.loss;
+    final pnlBg = isProfit ? colors.gainBg : colors.lossBg;
+    final pnlBorder = isProfit ? colors.gainBorder : colors.lossBorder;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.surfaceElevated,
-            AppColors.surface,
+            colors.surfaceElevated,
+            colors.surface,
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: colors.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: colors.cardShadow,
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -52,13 +53,20 @@ class PortfolioSummaryCard extends ConsumerWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Total Current Value', style: AppTextStyles.bodyMedium),
+                  Text(
+                    'Total Current Value',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: colors.textSecondary,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     MoneyFormatter.formatPaise(summary.totalCurrentValuePaise),
                     style: AppTextStyles.headingLarge.copyWith(
-                      fontFamily: 'monospace',
+                      fontFamily: 'JetBrains Mono',
                       fontWeight: FontWeight.w800,
+                      color: colors.textPrimary,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
                 ],
@@ -80,7 +88,8 @@ class PortfolioSummaryCard extends ConsumerWidget {
                         color: pnlColor,
                         fontWeight: FontWeight.w700,
                         fontSize: 13,
-                        fontFamily: 'monospace',
+                        fontFamily: 'JetBrains Mono',
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
                     Text(
@@ -89,7 +98,8 @@ class PortfolioSummaryCard extends ConsumerWidget {
                         color: pnlColor,
                         fontWeight: FontWeight.w600,
                         fontSize: 11,
-                        fontFamily: 'monospace',
+                        fontFamily: 'JetBrains Mono',
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
                   ],
@@ -99,7 +109,7 @@ class PortfolioSummaryCard extends ConsumerWidget {
           ),
 
           const SizedBox(height: 16),
-          const Divider(height: 1),
+          Divider(height: 1, color: colors.divider),
           const SizedBox(height: 16),
 
           // Bottom Stats (Invested vs Cash)
@@ -109,26 +119,40 @@ class PortfolioSummaryCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Total Invested', style: AppTextStyles.bodySmall),
+                    Text(
+                      'Total Invested',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: colors.textSecondary,
+                      ),
+                    ),
                     const SizedBox(height: 2),
                     Text(
                       MoneyFormatter.formatPaise(summary.totalInvestedPaise),
-                      style: AppTextStyles.monoNumbers,
+                      style: AppTextStyles.monoNumbers.copyWith(
+                        color: colors.textPrimary,
+                      ),
                     ),
                   ],
                 ),
               ),
-              Container(width: 1, height: 32, color: AppColors.border),
+              Container(width: 1, height: 32, color: colors.border),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Available Cash', style: AppTextStyles.bodySmall),
+                    Text(
+                      'Available Cash',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: colors.textSecondary,
+                      ),
+                    ),
                     const SizedBox(height: 2),
                     Text(
                       MoneyFormatter.formatPaise(walletBalance),
-                      style: AppTextStyles.monoNumbers.copyWith(color: AppColors.primaryLight),
+                      style: AppTextStyles.monoNumbers.copyWith(
+                        color: colors.primaryLight,
+                      ),
                     ),
                   ],
                 ),

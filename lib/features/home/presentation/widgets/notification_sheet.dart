@@ -15,13 +15,13 @@ class NotificationSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final sheetBg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final onSurface = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-    final onSurfaceVariant = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
-    final outlineVariant = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.lightPrimary;
-    final secondaryColor = isDark ? AppColors.darkGain : AppColors.lightGain;
+    final colors = context.colors;
+    final sheetBg = colors.surface;
+    final onSurface = colors.textPrimary;
+    final onSurfaceVariant = colors.textSecondary;
+    final outlineVariant = colors.border;
+    final primaryColor = colors.primary;
+    final secondaryColor = colors.gain;
 
     final notifications = [
       {
@@ -97,7 +97,7 @@ class NotificationSheet extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isDark ? AppColors.stitchSurface : const Color(0xFFF8FAFC),
+                color: colors.chipBackground,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: outlineVariant, width: 1),
               ),

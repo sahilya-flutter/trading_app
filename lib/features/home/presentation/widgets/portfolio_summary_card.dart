@@ -10,7 +10,7 @@ class PortfolioSummaryCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summary = ref.watch(portfolioSummaryProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = context.colors;
 
     // Use live user portfolio if holdings exist; otherwise provide default trading demo figures
     final bool hasHoldings = summary.totalHoldingsCount > 0;
@@ -24,14 +24,11 @@ class PortfolioSummaryCard extends ConsumerWidget {
         hasHoldings ? summary.totalPnlPercent : 13.81;
 
     final isPositive = displayPnlValue >= 0;
-    final pnlColor = isPositive
-        ? (isDark ? AppColors.darkGain : AppColors.lightGain)
-        : (isDark ? AppColors.darkLoss : AppColors.lightLoss);
-
-    final cardBg = isDark ? AppColors.darkSurface : AppColors.lightSurface;
-    final cardBorder = isDark ? AppColors.darkBorder : AppColors.lightBorder;
-    final onSurface = isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary;
-    final onSurfaceVariant = isDark ? AppColors.darkTextSecondary : AppColors.lightTextSecondary;
+    final pnlColor = isPositive ? colors.gain : colors.loss;
+    final cardBg = colors.surface;
+    final cardBorder = colors.border;
+    final onSurface = colors.textPrimary;
+    final onSurfaceVariant = colors.textSecondary;
 
     return Container(
       decoration: BoxDecoration(
@@ -40,9 +37,7 @@ class PortfolioSummaryCard extends ConsumerWidget {
         border: Border.all(color: cardBorder, width: 1),
         boxShadow: [
           BoxShadow(
-            color: isDark
-                ? Colors.black.withValues(alpha: 0.35)
-                : const Color(0x0F000000),
+            color: colors.cardShadow,
             blurRadius: 24,
             offset: const Offset(0, 4),
           ),
@@ -93,6 +88,7 @@ class PortfolioSummaryCard extends ConsumerWidget {
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: pnlColor,
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
                   ],
@@ -147,6 +143,7 @@ class PortfolioSummaryCard extends ConsumerWidget {
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                       color: onSurface,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
                 ],
@@ -172,6 +169,7 @@ class PortfolioSummaryCard extends ConsumerWidget {
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: pnlColor,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
                 ],

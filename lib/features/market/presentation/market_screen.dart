@@ -30,6 +30,8 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
     final allStocks = ref.watch(allStocksProvider);
     final isStressMode = ref.watch(stressModeProvider);
     final user = ref.watch(authStateProvider);
+    final colors = context.colors;
+    final isDark = context.isDark;
 
     final filteredStocks = allStocks.where((s) {
       if (_searchQuery.isEmpty) return true;
@@ -48,11 +50,11 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
               width: 8,
               height: 8,
               decoration: BoxDecoration(
-                color: isStressMode ? Colors.amber : AppColors.gain,
+                color: isStressMode ? Colors.amber : colors.gain,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: (isStressMode ? Colors.amber : AppColors.gain)
+                    color: (isStressMode ? Colors.amber : colors.gain)
                         .withValues(alpha: 0.6),
                     blurRadius: 6,
                     spreadRadius: 2,
@@ -61,11 +63,13 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
               ),
             ),
             const SizedBox(width: 6),
-            const Text(
+            Text(
               'Market Overview',
               style: TextStyle(
+                fontFamily: 'Hanken Grotesk',
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
+                color: colors.textPrimary,
               ),
             ),
           ],
@@ -80,23 +84,24 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
               avatar: Icon(
                 isStressMode ? Icons.bolt : Icons.speed,
                 size: 14,
-                color: isStressMode ? Colors.amber : AppColors.textSecondary,
+                color: isStressMode ? Colors.amber : colors.textSecondary,
               ),
               label: Text(
                 isStressMode ? '50+ t/s' : 'Feed',
                 style: TextStyle(
+                  fontFamily: 'Inter',
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
-                  color: isStressMode ? Colors.amber : AppColors.textSecondary,
+                  color: isStressMode ? Colors.amber : colors.textSecondary,
                 ),
               ),
               selected: isStressMode,
               selectedColor: Colors.amber.withValues(alpha: 0.15),
-              backgroundColor: AppColors.surfaceElevated,
+              backgroundColor: colors.surfaceElevated,
               side: BorderSide(
                 color: isStressMode
                     ? Colors.amber.withValues(alpha: 0.5)
-                    : AppColors.border,
+                    : colors.border,
               ),
               onSelected: (val) {
                 ref.read(stressModeProvider.notifier).toggle();
@@ -112,14 +117,15 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
             onPressed: () {
               ref.read(themeModeProvider.notifier).toggleTheme();
             },
-            tooltip: Theme.of(context).brightness == Brightness.dark
+            tooltip: isDark
                 ? 'Switch to Light theme'
                 : 'Switch to Dark theme',
             icon: Icon(
-              Theme.of(context).brightness == Brightness.dark
+              isDark
                   ? Icons.light_mode_outlined
                   : Icons.dark_mode_outlined,
               size: 20,
+              color: colors.primary,
             ),
           ),
 
@@ -136,22 +142,23 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                   border: Border.all(
                     color: user?.isGoogle == true
                         ? const Color(0xFF4285F4)
-                        : AppColors.primary,
+                        : colors.primary,
                     width: 1.5,
                   ),
                 ),
                 child: CircleAvatar(
                   radius: 14,
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: colors.primary,
                   backgroundImage: user?.avatarUrl != null
                       ? NetworkImage(user!.avatarUrl!)
                       : null,
                   child: user?.avatarUrl == null
                       ? Text(
                           user?.initials ?? 'T',
-                          style: const TextStyle(
+                          style: TextStyle(
+                            fontFamily: 'Inter',
                             fontSize: 11,
-                            color: Colors.white,
+                            color: colors.onPrimary,
                             fontWeight: FontWeight.bold,
                           ),
                         )
@@ -172,10 +179,10 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
               onChanged: (val) => setState(() => _searchQuery = val),
               decoration: InputDecoration(
                 hintText: 'Search stocks (e.g. RELIANCE, TCS)...',
-                prefixIcon: const Icon(Icons.search, size: 20, color: AppColors.textMuted),
+                prefixIcon: Icon(Icons.search, size: 20, color: colors.textMuted),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: const Icon(Icons.clear, size: 18, color: AppColors.textMuted),
+                        icon: Icon(Icons.clear, size: 18, color: colors.textMuted),
                         onPressed: () {
                           _searchController.clear();
                           setState(() => _searchQuery = '');
@@ -193,13 +200,17 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   '10 Universe Stocks',
-                  style: AppTextStyles.bodySmall,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: colors.textSecondary,
+                  ),
                 ),
                 Text(
                   'Tap stock to trade',
-                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.primaryLight),
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: colors.primaryLight,
+                  ),
                 ),
               ],
             ),
@@ -209,8 +220,11 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
           // Stocks List
           Expanded(
             child: filteredStocks.isEmpty
-                ? const Center(
-                    child: Text('No stocks match your search'),
+                ? Center(
+                    child: Text(
+                      'No stocks match your search',
+                      style: TextStyle(color: colors.textSecondary),
+                    ),
                   )
                 : ListView.separated(
                     itemCount: filteredStocks.length,
