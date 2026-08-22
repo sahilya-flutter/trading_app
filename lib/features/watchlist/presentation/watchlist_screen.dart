@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../core/widgets/trading_app_bar.dart';
 import 'watchlist_providers.dart';
 import 'widgets/add_stock_sheet.dart';
 import 'widgets/watchlist_row.dart';
@@ -149,26 +150,14 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
 
     return Scaffold(
       backgroundColor: colors.background,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top: Plain header reading "Watchlist" in 24 bold, no back arrow, no icons
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
-              child: Text(
-                'Watchlist',
-                style: TextStyle(
-                  fontFamily: 'Hanken Grotesk',
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  color: textDark,
-                  letterSpacing: -0.4,
-                ),
-              ),
-            ),
-
-            // Horizontally scrolling strip of pill chips
+      appBar: const TradingAppBar(
+        title: 'Watchlist',
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 12),
+          // Horizontally scrolling strip of pill chips
             SizedBox(
               height: 40,
               child: ListView(
@@ -442,7 +431,6 @@ class _WatchlistScreenState extends ConsumerState<WatchlistScreen> {
             ),
           ],
         ),
-      ),
     );
   }
 

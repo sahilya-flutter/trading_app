@@ -7,6 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/theme_provider.dart';
 import '../../../core/utils/money_formatter.dart';
+import '../../../core/widgets/trading_app_bar.dart';
 import '../../../core/widgets/user_avatar_view.dart';
 import '../../auth/domain/user_profile.dart';
 import '../../auth/presentation/auth_providers.dart';
@@ -633,25 +634,8 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: colors.background,
-      appBar: AppBar(
-        backgroundColor: colors.surface,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: textDark, size: 22),
-          onPressed: () => context.pop(),
-        ),
-        title: Text(
-          'Profile',
-          style: TextStyle(
-            fontFamily: 'Hanken Grotesk',
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: textDark,
-            letterSpacing: -0.3,
-          ),
-        ),
-        centerTitle: false,
+      appBar: TradingAppBar.secondary(
+        title: 'Profile',
         actions: const [],
       ),
       body: SafeArea(

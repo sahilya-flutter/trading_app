@@ -4,8 +4,11 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../app/theme/theme_provider.dart';
+import '../../../core/widgets/trading_app_bar.dart';
 import '../../../core/widgets/user_avatar_view.dart';
 import '../../auth/presentation/auth_providers.dart';
+import '../../home/presentation/widgets/notification_sheet.dart';
+import '../../notifications/presentation/notifications_providers.dart';
 import 'market_providers.dart';
 import 'widgets/market_price_row.dart';
 
@@ -31,6 +34,7 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
     final allStocks = ref.watch(allStocksProvider);
     final isStressMode = ref.watch(stressModeProvider);
     final user = ref.watch(authStateProvider);
+    final unreadCount = ref.watch(unreadNotificationsCountProvider);
     final colors = context.colors;
     final isDark = context.isDark;
 
@@ -42,43 +46,14 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
     }).toList();
 
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 12,
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                color: isStressMode ? Colors.amber : colors.gain,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: (isStressMode ? Colors.amber : colors.gain)
-                        .withValues(alpha: 0.6),
-                    blurRadius: 6,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              'Market Overview',
-              style: TextStyle(
-                fontFamily: 'Hanken Grotesk',
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: colors.textPrimary,
-              ),
-            ),
-          ],
-        ),
+      backgroundColor: colors.background,
+      appBar: TradingAppBar.market(
+        isStressMode: isStressMode,
+        subtitle: '10 Universe Stocks',
         actions: [
           // Stress Mode Button Chip
           Padding(
-            padding: const EdgeInsets.only(right: 4),
+            padding: const EdgeInsets.only(right: 2),
             child: FilterChip(
               visualDensity: VisualDensity.compact,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -110,51 +85,74 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
             ),
           ),
 
-          // Theme Toggle Icon Button
+          // Theme Toggle
           IconButton(
-            visualDensity: VisualDensity.compact,
-            padding: const EdgeInsets.all(4),
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            icon: Icon(
+              isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+              color: colors.textSecondary,
+              size: 20,
+            ),
+            tooltip: isDark ? 'Switch to Light theme' : 'Switch to Dark theme',
             onPressed: () {
               ref.read(themeModeProvider.notifier).toggleTheme();
             },
-            tooltip: isDark
-                ? 'Switch to Light theme'
-                : 'Switch to Dark theme',
-            icon: Icon(
-              isDark
-                  ? Icons.light_mode_outlined
-                  : Icons.dark_mode_outlined,
-              size: 20,
-              color: colors.primary,
-            ),
           ),
 
-          // User Profile Avatar with Google Photo / Initials
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: InkWell(
-              onTap: () => context.push('/profile'),
-              borderRadius: BorderRadius.circular(18),
-              child: Container(
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: user?.isGoogle == true
-                        ? const Color(0xFF4285F4)
-                        : colors.primary,
-                    width: 1.5,
-                  ),
+          // Notification Bell
+          IconButton(
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(
+                  Icons.notifications_outlined,
+                  color: colors.textSecondary,
+                  size: 22,
                 ),
-                child: CircleAvatar(
-                  radius: 14,
-                  backgroundColor: Colors.transparent,
-                  child: UserAvatarView(
-                    user: user,
-                    size: 28,
-                    fontSize: 11,
+                if (unreadCount > 0)
+                  Positioned(
+                    right: -2,
+                    top: -2,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: colors.gain,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: colors.surface, width: 1.5),
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        unreadCount > 9 ? '9+' : '$unreadCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: 'Inter',
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   ),
+              ],
+            ),
+            tooltip: 'Notifications',
+            onPressed: () => NotificationSheet.show(context),
+          ),
+
+          // Profile Avatar
+          Padding(
+            padding: const EdgeInsets.only(right: 12, left: 2),
+            child: GestureDetector(
+              onTap: () => context.push('/profile'),
+              child: CircleAvatar(
+                radius: 15,
+                backgroundColor: Colors.transparent,
+                child: UserAvatarView(
+                  user: user,
+                  size: 30,
+                  fontSize: 11,
                 ),
               ),
             ),
@@ -181,77 +179,95 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                         },
                       )
                     : null,
-                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                filled: true,
+                fillColor: colors.surfaceElevated,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: colors.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: colors.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: colors.primary, width: 1.5),
+                ),
               ),
             ),
           ),
 
-          // Header summary info
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '10 Universe Stocks',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: colors.textSecondary,
-                  ),
-                ),
-                Text(
-                  'Tap stock to trade',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: colors.primaryLight,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Column Headers Strip: SYMBOL / COMPANY vs LTP / CHG (%)
+          // Column Header Row
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            color: colors.chipBackground.withValues(alpha: 0.5),
+            decoration: BoxDecoration(
+              color: colors.surface,
+              border: Border(
+                bottom: BorderSide(color: colors.border, width: 0.5),
+              ),
+            ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'SYMBOL / COMPANY',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: colors.textSecondary,
-                    letterSpacing: 0.5,
+                Expanded(
+                  flex: 6,
+                  child: Text(
+                    'SYMBOL / COMPANY',
+                    style: AppTextStyles.labelMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: colors.textSecondary,
+                    ),
                   ),
                 ),
-                Text(
-                  'LTP / CHG (%)',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: colors.textSecondary,
-                    letterSpacing: 0.5,
+                Expanded(
+                  flex: 5,
+                  child: Text(
+                    'LTP / CHG (%)',
+                    textAlign: TextAlign.right,
+                    style: AppTextStyles.labelMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: colors.textSecondary,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          Divider(height: 1, thickness: 1, color: colors.divider),
 
-          // Stocks List
+          // Stock List
           Expanded(
             child: filteredStocks.isEmpty
                 ? Center(
-                    child: Text(
-                      'No stocks match your search',
-                      style: TextStyle(color: colors.textSecondary),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.search_off_rounded,
+                          size: 48,
+                          color: colors.textSecondary,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'No stocks found for "$_searchQuery"',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 14,
+                            color: colors.textSecondary,
+                          ),
+                        ),
+                      ],
                     ),
                   )
                 : ListView.separated(
                     itemCount: filteredStocks.length,
-                    separatorBuilder: (context, index) => const Divider(),
+                    separatorBuilder: (_, _) => Divider(
+                      height: 1,
+                      thickness: 0.5,
+                      color: colors.border.withValues(alpha: 0.5),
+                    ),
                     itemBuilder: (context, index) {
                       final stock = filteredStocks[index];
                       return MarketPriceRow(

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../core/widgets/empty_state_view.dart';
+import '../../../core/widgets/trading_app_bar.dart';
 import 'holdings_providers.dart';
 import 'widgets/holding_row.dart';
 import 'widgets/portfolio_summary_card.dart';
@@ -93,18 +94,11 @@ class HoldingsScreen extends ConsumerWidget {
     final colors = context.colors;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Holdings & Portfolio',
-          style: TextStyle(
-            fontFamily: 'Hanken Grotesk',
-            fontWeight: FontWeight.w700,
-            color: colors.textPrimary,
-          ),
-        ),
+      backgroundColor: colors.background,
+      appBar: TradingAppBar.holdings(
         actions: [
           IconButton(
-            icon: Icon(Icons.sort, color: colors.textSecondary),
+            icon: Icon(Icons.sort, color: colors.textSecondary, size: 22),
             tooltip: 'Sort Holdings',
             onPressed: () => _showSortSheet(context, ref),
           ),
