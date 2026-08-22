@@ -30,6 +30,7 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
   OrderSide _selectedSide = OrderSide.buy;
   final TextEditingController _qtyController = TextEditingController(text: '1');
   String? _validationError;
+  bool _isSubmitting = false;
 
   @override
   void dispose() {
@@ -46,28 +47,39 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
 
   void _setQuantity(double qty) {
     setState(() {
-      _qtyController.text = qty % 1 == 0 ? qty.toInt().toString() : qty.toString();
+      _qtyController.text =
+          qty % 1 == 0 ? qty.toInt().toString() : qty.toString();
       _validationError = null;
     });
   }
 
   void _addQuantity(double add) {
-    final currentUnits = QuantityUtils.parseQuantityToUnits(_qtyController.text) ?? 0;
+    final currentUnits =
+        QuantityUtils.parseQuantityToUnits(_qtyController.text) ?? 0;
     final currentQty = currentUnits / 1000.0;
     final newQty = currentQty + add;
     _setQuantity(newQty);
   }
 
   void _submitOrder() {
-    final qtyText = _qtyController.text.trim();
-    final quantityUnits = QuantityUtils.parseQuantityToUnits(qtyText);
+    if (_isSubmitting) return;
 
-    if (quantityUnits == null || quantityUnits <= 0) {
-      setState(() {
-        _validationError = 'Please enter a valid positive quantity (max 3 decimal places)';
-      });
+    final qtyText = _qtyController.text.trim();
+    if (qtyText.isEmpty) {
+      setState(() => _validationError = 'Enter quantity');
       return;
     }
+
+    final quantityUnits = QuantityUtils.parseQuantityToUnits(qtyText);
+    if (quantityUnits == null || quantityUnits <= 0) {
+      setState(() => _validationError = 'Quantity must be greater than 0');
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+      _validationError = null;
+    });
 
     final result = ref.read(orderHistoryProvider.notifier).executeOrder(
           symbol: widget.symbol,
@@ -77,6 +89,7 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
 
     if (!result.isSuccess) {
       setState(() {
+        _isSubmitting = false;
         _validationError = result.errorMessage ?? 'Order execution failed';
       });
     } else {
@@ -104,7 +117,8 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
     // Live tick for selected stock
     final tick = ref.watch(singleStockPriceProvider(widget.symbol));
     final ltpPaise = tick?.ltpPaise ?? stock.startingPricePaise;
-    final changePaise = tick?.changePaise ?? (stock.startingPricePaise - stock.previousClosePaise);
+    final changePaise = tick?.changePaise ??
+        (stock.startingPricePaise - stock.previousClosePaise);
     final changePercent = tick?.changePercent ?? 0.0;
 
     // Available cash balance
@@ -116,7 +130,8 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
     final heldUnits = holding?.quantityUnits ?? 0;
 
     // Parse entered quantity
-    final parsedUnits = QuantityUtils.parseQuantityToUnits(_qtyController.text);
+    final rawQtyText = _qtyController.text.trim();
+    final parsedUnits = QuantityUtils.parseQuantityToUnits(rawQtyText);
     final projectedValuePaise = parsedUnits != null
         ? QuantityUtils.calculateOrderValuePaise(parsedUnits, ltpPaise)
         : 0;
@@ -124,16 +139,21 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
     final isBuy = _selectedSide == OrderSide.buy;
     final themeColor = isBuy ? colors.gain : colors.loss;
 
-    // Live inline validation check
-    String? liveWarning;
-    if (parsedUnits != null && parsedUnits > 0) {
-      if (isBuy && projectedValuePaise > balancePaise) {
-        liveWarning = 'Order value exceeds available cash balance';
-      } else if (!isBuy && parsedUnits > heldUnits) {
-        liveWarning =
-            'Quantity exceeds held shares (${QuantityUtils.formatQuantity(heldUnits)} available)';
-      }
+    // Real-time inline validation
+    String? liveError;
+    if (rawQtyText.isEmpty) {
+      liveError = 'Enter quantity';
+    } else if (parsedUnits == null || parsedUnits <= 0) {
+      liveError = 'Quantity must be greater than 0';
+    } else if (isBuy && projectedValuePaise > balancePaise) {
+      liveError = 'Insufficient balance';
+    } else if (!isBuy && (heldUnits == 0 || parsedUnits > heldUnits)) {
+      liveError = heldUnits == 0
+          ? 'Insufficient holdings (0 shares held)'
+          : 'Insufficient holdings';
     }
+
+    final isSubmitEnabled = liveError == null && !_isSubmitting;
 
     return Scaffold(
       appBar: AppBar(
@@ -259,7 +279,8 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
                         decoration: BoxDecoration(
                           color: !isBuy ? colors.lossBg : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
-                          border: !isBuy ? Border.all(color: colors.loss) : null,
+                          border:
+                              !isBuy ? Border.all(color: colors.loss) : null,
                         ),
                         alignment: Alignment.center,
                         child: Text(
@@ -280,7 +301,7 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
 
             const SizedBox(height: 24),
 
-            // Quantity Input
+            // Quantity Input Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -309,7 +330,8 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
             const SizedBox(height: 8),
             TextField(
               controller: _qtyController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               style: AppTextStyles.monoNumbersLarge.copyWith(
                 color: colors.textPrimary,
               ),
@@ -330,25 +352,29 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
               spacing: 8,
               children: [
                 ActionChip(
-                  label: Text('+1', style: TextStyle(color: colors.textPrimary)),
+                  label:
+                      Text('+1', style: TextStyle(color: colors.textPrimary)),
                   backgroundColor: colors.chipBackground,
                   side: BorderSide(color: colors.border),
                   onPressed: () => _addQuantity(1),
                 ),
                 ActionChip(
-                  label: Text('+5', style: TextStyle(color: colors.textPrimary)),
+                  label:
+                      Text('+5', style: TextStyle(color: colors.textPrimary)),
                   backgroundColor: colors.chipBackground,
                   side: BorderSide(color: colors.border),
                   onPressed: () => _addQuantity(5),
                 ),
                 ActionChip(
-                  label: Text('+10', style: TextStyle(color: colors.textPrimary)),
+                  label:
+                      Text('+10', style: TextStyle(color: colors.textPrimary)),
                   backgroundColor: colors.chipBackground,
                   side: BorderSide(color: colors.border),
                   onPressed: () => _addQuantity(10),
                 ),
                 ActionChip(
-                  label: Text('+50', style: TextStyle(color: colors.textPrimary)),
+                  label:
+                      Text('+50', style: TextStyle(color: colors.textPrimary)),
                   backgroundColor: colors.chipBackground,
                   side: BorderSide(color: colors.border),
                   onPressed: () => _addQuantity(50),
@@ -386,7 +412,8 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
                             color: colors.chipBackground,
                             borderRadius: BorderRadius.circular(4),
@@ -404,12 +431,15 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Live Market Price',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: colors.textSecondary,
+                        Expanded(
+                          child: Text(
+                            'Live Market Price',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: colors.textSecondary,
+                            ),
                           ),
                         ),
+                        const SizedBox(width: 8),
                         Text(
                           MoneyFormatter.formatPaise(ltpPaise),
                           style: AppTextStyles.monoNumbers.copyWith(
@@ -422,12 +452,15 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Estimated Order Value',
-                          style: AppTextStyles.labelLarge.copyWith(
-                            color: colors.textPrimary,
+                        Expanded(
+                          child: Text(
+                            'Estimated Order Value',
+                            style: AppTextStyles.labelLarge.copyWith(
+                              color: colors.textPrimary,
+                            ),
                           ),
                         ),
+                        const SizedBox(width: 8),
                         Text(
                           MoneyFormatter.formatPaise(projectedValuePaise),
                           style: AppTextStyles.monoNumbersLarge.copyWith(
@@ -442,7 +475,7 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
             ),
 
             // Validation / Error Messages
-            if (_validationError != null || liveWarning != null) ...[
+            if (_validationError != null || liveError != null) ...[
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(12),
@@ -457,7 +490,7 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        _validationError ?? liveWarning ?? '',
+                        _validationError ?? liveError ?? '',
                         style: TextStyle(
                           color: colors.loss,
                           fontSize: 13,
@@ -474,22 +507,33 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
 
             // Submit Button
             ElevatedButton(
-              onPressed: _submitOrder,
+              onPressed: isSubmitEnabled ? _submitOrder : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: themeColor,
+                disabledBackgroundColor: themeColor.withValues(alpha: 0.35),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
-              child: Text(
-                '${isBuy ? 'BUY' : 'SELL'} ${widget.symbol}',
-                style: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
-                ),
-              ),
+              child: _isSubmitting
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      '${isBuy ? 'BUY' : 'SELL'} ${widget.symbol}',
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
             ),
           ],
         ),
