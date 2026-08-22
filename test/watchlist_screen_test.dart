@@ -111,6 +111,61 @@ void main() {
       expect(find.text('AXISBANK'), findsOneWidget);
     });
 
+    testWidgets('Swiping stock row from right to left removes it from watchlist and shows undo',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await storage.saveAuthProfile(const UserProfile(
+        id: 'test_user',
+        email: 'trader@gmail.com',
+        displayName: 'Test Trader',
+        provider: 'google',
+        isDemo: true,
+      ));
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            localStorageServiceProvider.overrideWithValue(storage),
+          ],
+          child: const TradingApp(),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Switch to Watchlist Tab
+      await tester.tap(find.text('Watchlist').first);
+      await tester.pumpAndSettle();
+
+      // Verify RELIANCE and TCS exist
+      final relianceFinder = find.byKey(const Key('watchlist_row_RELIANCE'));
+      final tcsFinder = find.byKey(const Key('watchlist_row_TCS'));
+      expect(relianceFinder, findsOneWidget);
+      expect(tcsFinder, findsOneWidget);
+
+      // Swipe RELIANCE from right to left (dismiss)
+      await tester.drag(relianceFinder, const Offset(-500.0, 0.0));
+      await tester.pumpAndSettle();
+
+      // RELIANCE is removed, but TCS and others remain
+      expect(find.byKey(const Key('watchlist_row_RELIANCE')), findsNothing);
+      expect(find.byKey(const Key('watchlist_row_TCS')), findsOneWidget);
+      expect(find.text('RELIANCE removed from watchlist'), findsOneWidget);
+      expect(find.text('Undo'), findsOneWidget);
+
+      // Tap Undo to restore RELIANCE
+      await tester.tap(find.text('Undo'));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('watchlist_row_RELIANCE')), findsOneWidget);
+    });
+
     testWidgets('Empty state variant renders correctly when watchlist has no stocks',
         (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1080, 2400);

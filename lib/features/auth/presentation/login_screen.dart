@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../app/theme/app_colors.dart';
 import 'auth_providers.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -83,14 +84,44 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
+  void _handleGoogleSignIn() async {
+    final success = await ref
+        .read(authControllerProvider.notifier)
+        .signInWithGoogle();
+
+    if (success && mounted) {
+      context.go('/market');
+    }
+  }
+
   void _showInfoSnackbar(String message) {
+    final colors = context.colors;
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
-        backgroundColor: const Color(0xFF0E1621),
+        content: Text(
+          message,
+          style: TextStyle(color: colors.textPrimary),
+        ),
+        backgroundColor: colors.surfaceElevated,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _showErrorSnackbar(String message) {
+    final colors = context.colors;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: colors.loss,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -99,21 +130,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
     final isLoading = authState.isLoading;
+    final colors = context.colors;
+
+    ref.listen<AuthControllerState>(authControllerProvider, (prev, next) {
+      if (next.errorMessage != null && next.errorMessage!.isNotEmpty) {
+        _showErrorSnackbar(next.errorMessage!);
+      }
+    });
 
     final cleanMobile = _cleanMobile(_mobileController.text);
     final isMobileValid = cleanMobile.length == 10;
     final isButtonEnabled = !isLoading &&
         (_mobileError == null && (isMobileValid || !_hasAttemptedSubmit));
 
-    const accentBlue = Color(0xFF1F4FD8);
-    const textDark = Color(0xFF0E1621);
-    const textGrey = Color(0xFF65707D);
-    const borderGrey = Color(0xFFE3E7ED);
-    const errorRed = Color(0xFFD93025);
-    const footerGrey = Color(0xFF9AA4B0);
+    final accentBlue = colors.primary;
+    final textDark = colors.textPrimary;
+    final textGrey = colors.textSecondary;
+    final borderGrey = colors.border;
+    final errorRed = colors.loss;
+    final footerGrey = colors.textMuted;
+    final inputBg = colors.inputFill;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Theme(
           // Override input decoration theme so no dark theme background leaks into inputs
@@ -136,7 +175,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Generous top spacing (~80pt)
-                        const SizedBox(height: 64),
+                        const SizedBox(height: 48),
 
                         // Brand block (left-aligned)
                         Container(
@@ -155,9 +194,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        const Text(
+                        Text(
                           '021 Trade',
                           style: TextStyle(
+                            fontFamily: 'Hanken Grotesk',
                             fontSize: 24,
                             fontWeight: FontWeight.w700,
                             color: textDark,
@@ -165,16 +205,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
+                        Text(
                           'Sign in to continue trading',
                           style: TextStyle(
+                            fontFamily: 'Inter',
                             fontSize: 14,
                             color: textGrey,
                           ),
                         ),
 
-                        // ~40pt gap
-                        const SizedBox(height: 40),
+                        // ~32pt gap
+                        const SizedBox(height: 32),
 
                         // Form Fields (Dimmed if loading)
                         Opacity(
@@ -183,9 +224,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               // Micro-label: MOBILE NUMBER
-                              const Text(
+                              Text(
                                 'MOBILE NUMBER',
                                 style: TextStyle(
+                                  fontFamily: 'Inter',
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   color: textGrey,
@@ -194,11 +236,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                               const SizedBox(height: 6),
 
-                              // Mobile field: 56pt, 8pt radius, white background
+                              // Mobile field: 56pt, 8pt radius, background
                               Container(
                                 height: 56,
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: inputBg,
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: _mobileError != null
@@ -214,9 +256,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 child: Row(
                                   children: [
                                     // Fixed non-editable "+91" prefix
-                                    const Text(
+                                    Text(
                                       '+91',
                                       style: TextStyle(
+                                        fontFamily: 'Inter',
                                         fontSize: 16,
                                         fontWeight: FontWeight.w500,
                                         color: textGrey,
@@ -232,7 +275,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     ),
                                     const SizedBox(width: 12),
 
-                                    // Number input in 16 semibold tabular figures with clean white background
+                                    // Number input in 16 semibold tabular figures
                                     Expanded(
                                       child: TextField(
                                         controller: _mobileController,
@@ -247,16 +290,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                             setState(() {});
                                           }
                                         },
-                                        style: const TextStyle(
+                                        style: TextStyle(
+                                          fontFamily: 'JetBrains Mono',
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
                                           color: textDark,
                                           backgroundColor: Colors.transparent,
-                                          fontFeatures: [
+                                          fontFeatures: const [
                                             FontFeature.tabularFigures()
                                           ],
                                         ),
-                                        decoration: const InputDecoration(
+                                        decoration: InputDecoration(
                                           filled: false,
                                           fillColor: Colors.transparent,
                                           border: InputBorder.none,
@@ -267,7 +311,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           isDense: true,
                                           hintText: '98765 43210',
                                           hintStyle: TextStyle(
-                                            color: Color(0xFFC4C8D0),
+                                            fontFamily: 'JetBrains Mono',
+                                            color: colors.textMuted,
                                             fontSize: 16,
                                             fontWeight: FontWeight.w600,
                                           ),
@@ -283,7 +328,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 const SizedBox(height: 6),
                                 Text(
                                   _mobileError!,
-                                  style: const TextStyle(
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
                                     fontSize: 12,
                                     color: errorRed,
                                     fontWeight: FontWeight.w500,
@@ -295,9 +341,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               const SizedBox(height: 16),
 
                               // Micro-label: PASSWORD
-                              const Text(
+                              Text(
                                 'PASSWORD',
                                 style: TextStyle(
+                                  fontFamily: 'Inter',
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   color: textGrey,
@@ -306,11 +353,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                               const SizedBox(height: 6),
 
-                              // Password field: 56pt, 8pt radius, white background
+                              // Password field: 56pt, 8pt radius, background
                               Container(
                                 height: 56,
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: inputBg,
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: _passwordFocusNode.hasFocus
@@ -331,14 +378,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         cursorColor: accentBlue,
                                         obscureText: _isPasswordObscured,
                                         obscuringCharacter: '•',
-                                        style: const TextStyle(
+                                        style: TextStyle(
+                                          fontFamily: 'Inter',
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
                                           color: textDark,
                                           backgroundColor: Colors.transparent,
                                           letterSpacing: 2.0,
                                         ),
-                                        decoration: const InputDecoration(
+                                        decoration: InputDecoration(
                                           filled: false,
                                           fillColor: Colors.transparent,
                                           border: InputBorder.none,
@@ -349,7 +397,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           isDense: true,
                                           hintText: '••••••',
                                           hintStyle: TextStyle(
-                                            color: Color(0xFFC4C8D0),
+                                            fontFamily: 'Inter',
+                                            color: colors.textMuted,
                                             fontSize: 16,
                                             letterSpacing: 2.0,
                                           ),
@@ -384,9 +433,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 child: GestureDetector(
                                   onTap: () => _showInfoSnackbar(
                                       'Password reset instructions sent to registered mobile.'),
-                                  child: const Text(
+                                  child: Text(
                                     'Forgot password?',
                                     style: TextStyle(
+                                      fontFamily: 'Inter',
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500,
                                       color: accentBlue,
@@ -398,10 +448,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ),
 
-                        // 24pt gap
-                        const SizedBox(height: 24),
+                        // 20pt gap
+                        const SizedBox(height: 20),
 
-                        // Full-width 52pt filled button
+                        // Full-width 52pt filled Sign In button
                         SizedBox(
                           width: double.infinity,
                           height: 52,
@@ -409,7 +459,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             onPressed: isButtonEnabled ? _handleSignIn : null,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: accentBlue,
-                              disabledBackgroundColor: borderGrey,
+                              disabledBackgroundColor: colors.chipBackground,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
@@ -429,6 +479,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 : Text(
                                     'Sign In',
                                     style: TextStyle(
+                                      fontFamily: 'Inter',
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                       color: isButtonEnabled
@@ -442,15 +493,86 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         // 16pt gap
                         const SizedBox(height: 16),
 
+                        // Clean "OR" Divider
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                color: borderGrey,
+                                thickness: 1,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 14),
+                              child: Text(
+                                'OR',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: footerGrey,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Divider(
+                                color: borderGrey,
+                                thickness: 1,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        // 16pt gap
+                        const SizedBox(height: 16),
+
+                        // Full-width 52pt "Continue with Google" button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: OutlinedButton(
+                            onPressed: isLoading ? null : _handleGoogleSignIn,
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: colors.surface,
+                              side: BorderSide(color: borderGrey, width: 1),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const _GoogleGIcon(size: 20),
+                                const SizedBox(width: 12),
+                                Text(
+                                  'Continue with Google',
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: textDark,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        // 16pt gap
+                        const SizedBox(height: 16),
+
                         // Centered "New here? Create account"
                         Center(
                           child: GestureDetector(
                             onTap: () => _showInfoSnackbar(
                                 'Instant paper trading account created on sign in.'),
                             child: RichText(
-                              text: const TextSpan(
+                              text: TextSpan(
                                 text: 'New here? ',
                                 style: TextStyle(
+                                  fontFamily: 'Inter',
                                   fontSize: 13,
                                   color: textGrey,
                                 ),
@@ -458,6 +580,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   TextSpan(
                                     text: 'Create account',
                                     style: TextStyle(
+                                      fontFamily: 'Inter',
                                       fontSize: 13,
                                       fontWeight: FontWeight.w500,
                                       color: accentBlue,
@@ -471,13 +594,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                         const Spacer(),
 
-                        // Pinned near bottom safe area: 11pt #9AA4B0 line
-                        const Center(
+                        // Pinned near bottom safe area: 11pt footer line
+                        Center(
                           child: Padding(
-                            padding: EdgeInsets.only(bottom: 12.0, top: 24.0),
+                            padding: const EdgeInsets.only(bottom: 12.0, top: 20.0),
                             child: Text(
                               'Simulated trading. No real money involved.',
                               style: TextStyle(
+                                fontFamily: 'Inter',
                                 fontSize: 11,
                                 color: footerGrey,
                               ),
@@ -495,4 +619,136 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
     );
   }
+}
+
+/// A crisp Google 4-color 'G' icon matching the official Google brand specification
+class _GoogleGIcon extends StatelessWidget {
+  final double size;
+
+  const _GoogleGIcon({this.size = 20});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _GoogleGLogoPainter(),
+      ),
+    );
+  }
+}
+
+class _GoogleGLogoPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double w = size.width;
+    final double h = size.height;
+    final Offset center = Offset(w / 2, h / 2);
+    final double radius = w / 2;
+
+    // Paint configuration
+    final Paint bluePaint = Paint()
+      ..color = const Color(0xFF4285F4)
+      ..style = PaintingStyle.fill;
+    final Paint redPaint = Paint()
+      ..color = const Color(0xFFEA4335)
+      ..style = PaintingStyle.fill;
+    final Paint yellowPaint = Paint()
+      ..color = const Color(0xFFFBBC05)
+      ..style = PaintingStyle.fill;
+    final Paint greenPaint = Paint()
+      ..color = const Color(0xFF34A853)
+      ..style = PaintingStyle.fill;
+
+    // Outer and inner paths for standard Google 4-color segmented arc
+    final Path bluePath = Path()
+      ..moveTo(center.dx, center.dy - radius * 0.2)
+      ..lineTo(center.dx + radius, center.dy - radius * 0.2)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: radius),
+        -0.3,
+        1.1,
+        false,
+      )
+      ..lineTo(center.dx + radius * 0.4, center.dy + radius * 0.4)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: radius * 0.55),
+        0.8,
+        -0.8,
+        false,
+      )
+      ..close();
+
+    final Path greenPath = Path()
+      ..moveTo(center.dx + radius * 0.7, center.dy + radius * 0.7)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: radius),
+        0.8,
+        1.3,
+        false,
+      )
+      ..lineTo(center.dx - radius * 0.35, center.dy + radius * 0.35)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: radius * 0.55),
+        2.1,
+        -1.3,
+        false,
+      )
+      ..close();
+
+    final Path yellowPath = Path()
+      ..moveTo(center.dx - radius * 0.7, center.dy + radius * 0.7)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: radius),
+        2.1,
+        1.1,
+        false,
+      )
+      ..lineTo(center.dx - radius * 0.35, center.dy - radius * 0.35)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: radius * 0.55),
+        3.2,
+        -1.1,
+        false,
+      )
+      ..close();
+
+    final Path redPath = Path()
+      ..moveTo(center.dx - radius * 0.7, center.dy - radius * 0.7)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: radius),
+        3.2,
+        1.3,
+        false,
+      )
+      ..lineTo(center.dx + radius * 0.35, center.dy - radius * 0.35)
+      ..arcTo(
+        Rect.fromCircle(center: center, radius: radius * 0.55),
+        4.5,
+        -1.3,
+        false,
+      )
+      ..close();
+
+    // Central crossbar for the G
+    final Rect barRect = Rect.fromLTRB(
+      center.dx - radius * 0.05,
+      center.dy - radius * 0.22,
+      center.dx + radius,
+      center.dy + radius * 0.22,
+    );
+
+    canvas.drawPath(redPath, redPaint);
+    canvas.drawPath(yellowPath, yellowPaint);
+    canvas.drawPath(greenPath, greenPaint);
+    canvas.drawPath(bluePath, bluePaint);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(barRect, const Radius.circular(2)),
+      bluePaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../app/theme/app_colors.dart';
 import '../../../../core/constants/stock_constants.dart';
 import '../../../../core/utils/money_formatter.dart';
 import '../../../market/presentation/market_providers.dart';
@@ -20,6 +21,7 @@ class WatchlistRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tick = ref.watch(singleStockPriceProvider(symbol));
     final stock = StockConstants.stockMap[symbol];
+    final colors = context.colors;
 
     final ltpPaise = tick?.ltpPaise ?? stock?.startingPricePaise ?? 0;
     final changePaise = tick?.changePaise ??
@@ -30,9 +32,7 @@ class WatchlistRow extends ConsumerWidget {
             : 0.0);
 
     final isPositive = changePaise >= 0;
-    final changeColor = isPositive
-        ? const Color(0xFF16A34A) // Green if up
-        : const Color(0xFFDC2626); // Red if down
+    final changeColor = isPositive ? colors.gain : colors.loss;
 
     final arrow = isPositive ? '↑' : '↓';
     final sign = isPositive ? '+' : '-';
@@ -44,7 +44,7 @@ class WatchlistRow extends ConsumerWidget {
     final priceStr = MoneyFormatter.formatPaise(ltpPaise).replaceAll('₹', '');
 
     return Material(
-      color: Colors.white,
+      color: colors.surface,
       child: InkWell(
         onTap: onTap,
         child: Container(
@@ -52,14 +52,14 @@ class WatchlistRow extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              // Faint grey drag-handle icon (six dots) on far left
+              // Drag-handle icon (six dots) on far left
               ReorderableDragStartListener(
                 index: index,
-                child: const Padding(
-                  padding: EdgeInsets.only(right: 12),
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 12),
                   child: Icon(
                     Icons.drag_indicator,
-                    color: Color(0xFFCBD5E1), // Faint grey 6-dots
+                    color: colors.textDisabled,
                     size: 20,
                   ),
                 ),
@@ -71,10 +71,11 @@ class WatchlistRow extends ConsumerWidget {
                   children: [
                     Text(
                       symbol,
-                      style: const TextStyle(
+                      style: TextStyle(
+                        fontFamily: 'Inter',
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF0E1621),
+                        color: colors.textPrimary,
                         letterSpacing: -0.2,
                       ),
                     ),
@@ -85,15 +86,16 @@ class WatchlistRow extends ConsumerWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE2E8F0),
+                        color: colors.chipBackground,
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: const Text(
+                      child: Text(
                         'NSE',
                         style: TextStyle(
+                          fontFamily: 'Inter',
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF64748B),
+                          color: colors.textSecondary,
                           letterSpacing: 0.2,
                         ),
                       ),
@@ -109,11 +111,12 @@ class WatchlistRow extends ConsumerWidget {
                 children: [
                   Text(
                     priceStr,
-                    style: const TextStyle(
+                    style: TextStyle(
+                      fontFamily: 'JetBrains Mono',
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF0E1621),
-                      fontFeatures: [FontFeature.tabularFigures()],
+                      color: colors.textPrimary,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                       letterSpacing: -0.2,
                     ),
                   ),
@@ -121,6 +124,7 @@ class WatchlistRow extends ConsumerWidget {
                   Text(
                     formattedChange,
                     style: TextStyle(
+                      fontFamily: 'JetBrains Mono',
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                       color: changeColor,

@@ -18,18 +18,26 @@ class OrderConfirmationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     final isBuy = order.side == OrderSide.buy;
-    final themeColor = isBuy ? AppColors.gain : AppColors.loss;
+    final themeColor = isBuy ? colors.gain : colors.loss;
     final timeFormatted =
         DateFormat('dd MMM yyyy, hh:mm:ss a').format(order.timestamp);
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('Order Status'),
+        title: Text(
+          'Order Status',
+          style: TextStyle(
+            fontFamily: 'Hanken Grotesk',
+            fontWeight: FontWeight.w700,
+            color: colors.textPrimary,
+          ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.close),
+            icon: Icon(Icons.close, color: colors.textPrimary),
             onPressed: () => context.go('/market'),
           ),
         ],
@@ -55,13 +63,17 @@ class OrderConfirmationScreen extends StatelessWidget {
 
             Text(
               'Order Executed Successfully!',
-              style: AppTextStyles.headingMedium,
+              style: AppTextStyles.headingMedium.copyWith(
+                color: colors.textPrimary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'Your ${order.side.displayName} order for ${order.symbol} has been executed at market LTP.',
-              style: AppTextStyles.bodyMedium,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: colors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
 
@@ -69,7 +81,11 @@ class OrderConfirmationScreen extends StatelessWidget {
 
             // Receipt Card
             Card(
-              color: AppColors.surfaceElevated,
+              color: colors.surfaceElevated,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: colors.border),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -77,14 +93,19 @@ class OrderConfirmationScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Action / Side', style: AppTextStyles.bodyMedium),
+                        Text(
+                          'Action / Side',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: colors.textSecondary,
+                          ),
+                        ),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: isBuy ? AppColors.gainBg : AppColors.lossBg,
+                            color: isBuy ? colors.gainBg : colors.lossBg,
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
-                              color: isBuy ? AppColors.gainBorder : AppColors.lossBorder,
+                              color: isBuy ? colors.gainBorder : colors.lossBorder,
                             ),
                           ),
                           child: Text(
@@ -98,7 +119,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const Divider(height: 24),
+                    Divider(height: 24, color: colors.divider),
                     _ReceiptRow(label: 'Stock Symbol', value: order.symbol),
                     const SizedBox(height: 12),
                     _ReceiptRow(
@@ -110,18 +131,23 @@ class OrderConfirmationScreen extends StatelessWidget {
                       label: 'Execution Price',
                       value: MoneyFormatter.formatPaise(order.executionPricePaise),
                     ),
-                    const Divider(height: 24),
+                    Divider(height: 24, color: colors.divider),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Total Order Value', style: AppTextStyles.labelLarge),
+                        Text(
+                          'Total Order Value',
+                          style: AppTextStyles.labelLarge.copyWith(
+                            color: colors.textPrimary,
+                          ),
+                        ),
                         Text(
                           MoneyFormatter.formatPaise(order.orderValuePaise),
                           style: AppTextStyles.monoNumbersLarge.copyWith(color: themeColor),
                         ),
                       ],
                     ),
-                    const Divider(height: 24),
+                    Divider(height: 24, color: colors.divider),
                     _ReceiptRow(label: 'Execution Time', value: timeFormatted),
                     const SizedBox(height: 12),
                     _ReceiptRow(
@@ -143,10 +169,10 @@ class OrderConfirmationScreen extends StatelessWidget {
                     onPressed: () => context.go('/holdings'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: const BorderSide(color: AppColors.border),
+                      side: BorderSide(color: colors.border),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                    child: const Text('View Holdings', style: TextStyle(color: AppColors.textPrimary)),
+                    child: Text('View Holdings', style: TextStyle(color: colors.textPrimary)),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -155,10 +181,10 @@ class OrderConfirmationScreen extends StatelessWidget {
                     onPressed: () => context.go('/market'),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: colors.primary,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     ),
-                    child: const Text('Market', style: TextStyle(fontWeight: FontWeight.w600)),
+                    child: Text('Market', style: TextStyle(fontWeight: FontWeight.w600, color: colors.onPrimary)),
                   ),
                 ),
               ],
@@ -178,11 +204,22 @@ class _ReceiptRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: AppTextStyles.bodyMedium),
-        Text(value, style: AppTextStyles.labelMedium.copyWith(color: AppColors.textPrimary)),
+        Text(
+          label,
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: colors.textSecondary,
+          ),
+        ),
+        Text(
+          value,
+          style: AppTextStyles.labelMedium.copyWith(
+            color: colors.textPrimary,
+          ),
+        ),
       ],
     );
   }

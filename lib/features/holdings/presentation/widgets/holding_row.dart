@@ -21,6 +21,8 @@ class HoldingRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tick = ref.watch(singleStockPriceProvider(holding.symbol));
+    final colors = context.colors;
+
     final ltpPaise = tick?.ltpPaise ?? holding.averagePricePaise;
 
     final currentPaise = holding.currentValuePaise(ltpPaise);
@@ -28,9 +30,9 @@ class HoldingRow extends ConsumerWidget {
     final pnlPct = holding.pnlPercent(ltpPaise);
 
     final isProfit = pnlPaise >= 0;
-    final badgeColor = isProfit ? AppColors.gain : AppColors.loss;
-    final badgeBg = isProfit ? AppColors.gainBg : AppColors.lossBg;
-    final badgeBorder = isProfit ? AppColors.gainBorder : AppColors.lossBorder;
+    final badgeColor = isProfit ? colors.gain : colors.loss;
+    final badgeBg = isProfit ? colors.gainBg : colors.lossBg;
+    final badgeBorder = isProfit ? colors.gainBorder : colors.lossBorder;
 
     return Material(
       color: Colors.transparent,
@@ -48,20 +50,26 @@ class HoldingRow extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        Text(holding.symbol, style: AppTextStyles.labelLarge),
+                        Text(
+                          holding.symbol,
+                          style: AppTextStyles.labelLarge.copyWith(
+                            color: colors.textPrimary,
+                          ),
+                        ),
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
                           decoration: BoxDecoration(
-                            color: AppColors.chipBackground,
+                            color: colors.chipBackground,
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             '${QuantityUtils.formatQuantity(holding.quantityUnits, trimTrailingZeros: true)} Qty',
-                            style: const TextStyle(
+                            style: TextStyle(
+                              fontFamily: 'Inter',
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.textSecondary,
+                              color: colors.textSecondary,
                             ),
                           ),
                         ),
@@ -70,7 +78,9 @@ class HoldingRow extends ConsumerWidget {
                     const SizedBox(height: 4),
                     Text(
                       'Avg: ${MoneyFormatter.formatPaise(holding.averagePricePaise)}  •  LTP: ${MoneyFormatter.formatPaise(ltpPaise)}',
-                      style: AppTextStyles.bodySmall,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: colors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
@@ -82,7 +92,9 @@ class HoldingRow extends ConsumerWidget {
                 children: [
                   Text(
                     MoneyFormatter.formatPaise(currentPaise),
-                    style: AppTextStyles.monoNumbers,
+                    style: AppTextStyles.monoNumbers.copyWith(
+                      color: colors.textPrimary,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Container(
@@ -95,10 +107,11 @@ class HoldingRow extends ConsumerWidget {
                     child: Text(
                       '${MoneyFormatter.formatPaiseWithSign(pnlPaise)} (${MoneyFormatter.formatPercent(pnlPct)})',
                       style: TextStyle(
+                        fontFamily: 'JetBrains Mono',
                         color: badgeColor,
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        fontFamily: 'monospace',
+                        fontFeatures: const [FontFeature.tabularFigures()],
                       ),
                     ),
                   ),

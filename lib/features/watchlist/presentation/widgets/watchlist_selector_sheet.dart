@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../app/theme/app_colors.dart';
 import '../watchlist_providers.dart';
 
 class WatchlistSelectorSheet extends ConsumerWidget {
@@ -7,39 +8,46 @@ class WatchlistSelectorSheet extends ConsumerWidget {
 
   void _showCreateDialog(BuildContext context, WidgetRef ref) {
     final controller = TextEditingController();
+    final colors = context.colors;
+
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
+        backgroundColor: colors.surfaceElevated,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: colors.border),
+        ),
+        title: Text(
           'Create Watchlist',
           style: TextStyle(
+            fontFamily: 'Hanken Grotesk',
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF111827),
+            color: colors.textPrimary,
           ),
         ),
         content: TextField(
           controller: controller,
           autofocus: true,
+          style: TextStyle(color: colors.textPrimary),
           decoration: InputDecoration(
             hintText: 'Watchlist Name (e.g. Banking, Tech)',
-            hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+            hintStyle: TextStyle(color: colors.textMuted, fontSize: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+              borderSide: BorderSide(color: colors.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF0066FF), width: 1.5),
+              borderSide: BorderSide(color: colors.primary, width: 1.5),
             ),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel', style: TextStyle(color: Color(0xFF6B7280))),
+            child: Text('Cancel', style: TextStyle(color: colors.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -51,14 +59,14 @@ class WatchlistSelectorSheet extends ConsumerWidget {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0066FF),
+              backgroundColor: colors.primary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text(
+            child: Text(
               'Create',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+              style: TextStyle(color: colors.onPrimary, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -69,39 +77,46 @@ class WatchlistSelectorSheet extends ConsumerWidget {
   void _showRenameDialog(
       BuildContext context, WidgetRef ref, String id, String currentName) {
     final controller = TextEditingController(text: currentName);
+    final colors = context.colors;
+
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
+        backgroundColor: colors.surfaceElevated,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: colors.border),
+        ),
+        title: Text(
           'Rename Watchlist',
           style: TextStyle(
+            fontFamily: 'Hanken Grotesk',
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF111827),
+            color: colors.textPrimary,
           ),
         ),
         content: TextField(
           controller: controller,
           autofocus: true,
+          style: TextStyle(color: colors.textPrimary),
           decoration: InputDecoration(
             hintText: 'New Watchlist Name',
-            hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+            hintStyle: TextStyle(color: colors.textMuted, fontSize: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+              borderSide: BorderSide(color: colors.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFF0066FF), width: 1.5),
+              borderSide: BorderSide(color: colors.primary, width: 1.5),
             ),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel', style: TextStyle(color: Color(0xFF6B7280))),
+            child: Text('Cancel', style: TextStyle(color: colors.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -112,14 +127,14 @@ class WatchlistSelectorSheet extends ConsumerWidget {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0066FF),
+              backgroundColor: colors.primary,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text(
+            child: Text(
               'Save',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+              style: TextStyle(color: colors.onPrimary, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -129,31 +144,37 @@ class WatchlistSelectorSheet extends ConsumerWidget {
 
   void _showDeleteDialog(
       BuildContext context, WidgetRef ref, String id, String name) {
+    final colors = context.colors;
+
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
+        backgroundColor: colors.surfaceElevated,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: colors.border),
+        ),
+        title: Text(
           'Delete Watchlist',
           style: TextStyle(
+            fontFamily: 'Hanken Grotesk',
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF111827),
+            color: colors.textPrimary,
           ),
         ),
         content: Text(
           'Are you sure you want to delete "$name"?',
-          style: const TextStyle(color: Color(0xFF4B5563), fontSize: 14),
+          style: TextStyle(color: colors.textSecondary, fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancel', style: TextStyle(color: Color(0xFF6B7280))),
+            child: Text('Cancel', style: TextStyle(color: colors.textSecondary)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
+              backgroundColor: colors.loss,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -162,9 +183,9 @@ class WatchlistSelectorSheet extends ConsumerWidget {
               ref.read(watchlistProvider.notifier).deleteWatchlist(id);
               Navigator.of(ctx).pop();
             },
-            child: const Text(
+            child: Text(
               'Delete',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+              style: TextStyle(color: colors.onPrimary, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -177,56 +198,59 @@ class WatchlistSelectorSheet extends ConsumerWidget {
     final state = ref.watch(watchlistProvider);
     final watchlists = state.watchlists;
     final activeId = state.activeWatchlistId;
+    final colors = context.colors;
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Handle bar
-          Container(
-            margin: const EdgeInsets.only(top: 8, bottom: 6),
-            width: 36,
-            height: 4,
-            decoration: BoxDecoration(
-              color: const Color(0xFFD1D5DB),
-              borderRadius: BorderRadius.circular(2),
+    return Material(
+      color: colors.surfaceElevated,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      child: Container(
+        padding: const EdgeInsets.only(bottom: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              margin: const EdgeInsets.only(top: 8, bottom: 6),
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: colors.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
-          ),
 
-          // Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Manage Watchlists',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF111827),
-                  ),
-                ),
-                TextButton.icon(
-                  icon: const Icon(Icons.add, size: 18, color: Color(0xFF0066FF)),
-                  label: const Text(
-                    'New Watchlist',
-                    style: TextStyle(
-                      color: Color(0xFF0066FF),
-                      fontWeight: FontWeight.w600,
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Manage Watchlists',
+                      style: TextStyle(
+                        fontFamily: 'Hanken Grotesk',
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                        color: colors.textPrimary,
+                      ),
                     ),
                   ),
-                  onPressed: () => _showCreateDialog(context, ref),
-                ),
-              ],
+                  TextButton.icon(
+                    icon: Icon(Icons.add, size: 18, color: colors.primary),
+                    label: Text(
+                      'New Watchlist',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        color: colors.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    onPressed: () => _showCreateDialog(context, ref),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const Divider(height: 1, thickness: 1, color: Color(0xFFECEFF2)),
+            Divider(height: 1, thickness: 1, color: colors.divider),
 
           // Watchlist list
           Flexible(
@@ -234,7 +258,7 @@ class WatchlistSelectorSheet extends ConsumerWidget {
               shrinkWrap: true,
               itemCount: watchlists.length,
               separatorBuilder: (_, _) =>
-                  const Divider(height: 1, thickness: 1, color: Color(0xFFECEFF2)),
+                  Divider(height: 1, thickness: 1, color: colors.divider),
               itemBuilder: (context, index) {
                 final w = watchlists[index];
                 final isSelected = w.id == activeId;
@@ -245,40 +269,42 @@ class WatchlistSelectorSheet extends ConsumerWidget {
                         ? Icons.radio_button_checked
                         : Icons.radio_button_off,
                     color: isSelected
-                        ? const Color(0xFF0066FF)
-                        : const Color(0xFF9CA3AF),
+                        ? colors.primary
+                        : colors.textMuted,
                   ),
                   title: Text(
                     w.name,
                     style: TextStyle(
+                      fontFamily: 'Inter',
                       fontWeight:
                           isSelected ? FontWeight.w700 : FontWeight.w500,
                       color: isSelected
-                          ? const Color(0xFF111827)
-                          : const Color(0xFF4B5563),
+                          ? colors.textPrimary
+                          : colors.textSecondary,
                     ),
                   ),
                   subtitle: Text(
                     '${w.symbols.length} stocks',
-                    style: const TextStyle(
+                    style: TextStyle(
+                      fontFamily: 'Inter',
                       fontSize: 12,
-                      color: Color(0xFF8E95A2),
+                      color: colors.textMuted,
                     ),
                   ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.edit_outlined,
-                            size: 18, color: Color(0xFF6B7280)),
+                        icon: Icon(Icons.edit_outlined,
+                            size: 18, color: colors.textSecondary),
                         onPressed: () =>
                             _showRenameDialog(context, ref, w.id, w.name),
                         tooltip: 'Rename',
                       ),
                       if (watchlists.length > 1)
                         IconButton(
-                          icon: const Icon(Icons.delete_outline,
-                              size: 18, color: Color(0xFFDC2626)),
+                          icon: Icon(Icons.delete_outline,
+                              size: 18, color: colors.loss),
                           onPressed: () =>
                               _showDeleteDialog(context, ref, w.id, w.name),
                           tooltip: 'Delete',
@@ -297,6 +323,7 @@ class WatchlistSelectorSheet extends ConsumerWidget {
           ),
         ],
       ),
+    ),
     );
   }
 }

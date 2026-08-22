@@ -13,14 +13,16 @@ class HoldingsScreen extends ConsumerWidget {
 
   void _showSortSheet(BuildContext context, WidgetRef ref) {
     final currentSort = ref.read(holdingsSortOptionProvider);
+    final colors = context.colors;
 
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: BoxDecoration(
+          color: colors.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          border: Border.all(color: colors.border),
         ),
         padding: const EdgeInsets.only(bottom: 24),
         child: Column(
@@ -31,7 +33,7 @@ class HoldingsScreen extends ConsumerWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.border,
+                color: colors.border,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -40,27 +42,33 @@ class HoldingsScreen extends ConsumerWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Sort Holdings By', style: AppTextStyles.headingSmall),
+                  Text(
+                    'Sort Holdings By',
+                    style: AppTextStyles.headingSmall.copyWith(
+                      color: colors.textPrimary,
+                    ),
+                  ),
                   IconButton(
-                    icon: const Icon(Icons.close, color: AppColors.textMuted),
+                    icon: Icon(Icons.close, color: colors.textMuted),
                     onPressed: () => Navigator.of(ctx).pop(),
                   ),
                 ],
               ),
             ),
-            const Divider(),
+            Divider(color: colors.divider),
             ...HoldingsSortOption.values.map((option) {
               final isSelected = option == currentSort;
               return ListTile(
                 leading: Icon(
                   isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-                  color: isSelected ? AppColors.primary : AppColors.textMuted,
+                  color: isSelected ? colors.primary : colors.textMuted,
                 ),
                 title: Text(
                   option.label,
                   style: TextStyle(
+                    fontFamily: 'Inter',
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+                    color: isSelected ? colors.textPrimary : colors.textSecondary,
                   ),
                 ),
                 onTap: () {
@@ -79,13 +87,21 @@ class HoldingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final holdings = ref.watch(sortedHoldingsProvider);
     final currentSort = ref.watch(holdingsSortOptionProvider);
+    final colors = context.colors;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Holdings & Portfolio'),
+        title: Text(
+          'Holdings & Portfolio',
+          style: TextStyle(
+            fontFamily: 'Hanken Grotesk',
+            fontWeight: FontWeight.w700,
+            color: colors.textPrimary,
+          ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.sort, color: AppColors.textSecondary),
+            icon: Icon(Icons.sort, color: colors.textSecondary),
             tooltip: 'Sort Holdings',
             onPressed: () => _showSortSheet(context, ref),
           ),
@@ -104,7 +120,9 @@ class HoldingsScreen extends ConsumerWidget {
               children: [
                 Text(
                   'Positions (${holdings.length})',
-                  style: AppTextStyles.labelLarge,
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: colors.textPrimary,
+                  ),
                 ),
                 InkWell(
                   onTap: () => _showSortSheet(context, ref),
@@ -115,9 +133,9 @@ class HoldingsScreen extends ConsumerWidget {
                       children: [
                         Text(
                           currentSort.label,
-                          style: AppTextStyles.bodySmall.copyWith(color: AppColors.primaryLight),
+                          style: AppTextStyles.bodySmall.copyWith(color: colors.primaryLight),
                         ),
-                        const Icon(Icons.arrow_drop_down, size: 16, color: AppColors.primaryLight),
+                        Icon(Icons.arrow_drop_down, size: 16, color: colors.primaryLight),
                       ],
                     ),
                   ),
@@ -125,7 +143,7 @@ class HoldingsScreen extends ConsumerWidget {
               ],
             ),
           ),
-          const Divider(),
+          Divider(color: colors.divider),
 
           // Holdings List
           Expanded(
@@ -140,7 +158,7 @@ class HoldingsScreen extends ConsumerWidget {
                   )
                 : ListView.separated(
                     itemCount: holdings.length,
-                    separatorBuilder: (context, index) => const Divider(),
+                    separatorBuilder: (context, index) => Divider(color: colors.divider),
                     itemBuilder: (context, index) {
                       final holding = holdings[index];
                       return HoldingRow(

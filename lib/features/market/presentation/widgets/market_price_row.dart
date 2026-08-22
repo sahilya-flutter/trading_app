@@ -21,6 +21,7 @@ class MarketPriceRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Only rebuilds when this specific stock tick updates!
     final tick = ref.watch(singleStockPriceProvider(stock.symbol));
+    final colors = context.colors;
 
     final ltpPaise = tick?.ltpPaise ?? stock.startingPricePaise;
     final changePaise = tick?.changePaise ?? (stock.startingPricePaise - stock.previousClosePaise);
@@ -30,67 +31,77 @@ class MarketPriceRow extends ConsumerWidget {
             : 0.0);
 
     final isPositive = changePaise >= 0;
-    final badgeColor = isPositive ? AppColors.gain : AppColors.loss;
-    final badgeBg = isPositive ? AppColors.gainBg : AppColors.lossBg;
-    final badgeBorder = isPositive ? AppColors.gainBorder : AppColors.lossBorder;
+    final badgeColor = isPositive ? colors.gain : colors.loss;
+    final badgeBg = isPositive ? colors.gainBg : colors.lossBg;
+    final badgeBorder = isPositive ? colors.gainBorder : colors.lossBorder;
 
-    return InkWell(
-      onTap: onTap,
-      child: PriceFlashWidget(
-        tick: tick,
-        borderRadius: BorderRadius.circular(0),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            // Symbol & Company
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: PriceFlashWidget(
+          tick: tick,
+          borderRadius: BorderRadius.circular(0),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              // Symbol & Company
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      stock.symbol,
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: colors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      stock.companyName,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: colors.textSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+
+              // Price & Change
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    stock.symbol,
-                    style: AppTextStyles.labelLarge,
+                    MoneyFormatter.formatPaise(ltpPaise),
+                    style: AppTextStyles.monoNumbers.copyWith(
+                      color: colors.textPrimary,
+                    ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    stock.companyName,
-                    style: AppTextStyles.bodySmall,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: badgeBg,
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: badgeBorder, width: 0.5),
+                    ),
+                    child: Text(
+                      '${MoneyFormatter.formatPaiseWithSign(changePaise)} (${MoneyFormatter.formatPercent(changePercent)})',
+                      style: TextStyle(
+                        fontFamily: 'JetBrains Mono',
+                        color: badgeColor,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-
-            // Price & Change
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  MoneyFormatter.formatPaise(ltpPaise),
-                  style: AppTextStyles.monoNumbers,
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: badgeBg,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: badgeBorder, width: 0.5),
-                  ),
-                  child: Text(
-                    '${MoneyFormatter.formatPaiseWithSign(changePaise)} (${MoneyFormatter.formatPercent(changePercent)})',
-                    style: TextStyle(
-                      color: badgeColor,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'monospace',
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

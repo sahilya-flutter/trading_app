@@ -41,8 +41,20 @@ class WatchlistNotifier extends StateNotifier<WatchlistState> {
           watchlists: _storage.loadWatchlists(),
           activeWatchlistId: _storage.loadActiveWatchlistId(),
         )) {
-    // Ensure activeWatchlistId is valid
-    if (state.activeWatchlist == null && state.watchlists.isNotEmpty) {
+    // Ensure activeWatchlistId is valid and at least one watchlist exists
+    if (state.watchlists.isEmpty) {
+      final defaultWl = Watchlist(
+        id: 'default_watchlist',
+        name: 'My Watchlist',
+        symbols: ['RELIANCE', 'TCS', 'INFY', 'HDFCBANK', 'ICICIBANK'],
+        createdAt: DateTime.now(),
+      );
+      state = WatchlistState(
+        watchlists: [defaultWl],
+        activeWatchlistId: defaultWl.id,
+      );
+      _persist();
+    } else if (state.activeWatchlist == null) {
       state = state.copyWith(activeWatchlistId: state.watchlists.first.id);
     }
   }
@@ -96,7 +108,10 @@ class WatchlistNotifier extends StateNotifier<WatchlistState> {
 
   void deleteWatchlist(String id) {
     if (state.watchlists.length <= 1) {
-      // Don't delete the last remaining watchlist; reset it instead or keep it
+      // Reset the single remaining watchlist to empty symbols
+      final reset = state.watchlists.first.copyWith(symbols: []);
+      state = state.copyWith(watchlists: [reset]);
+      _persist();
       return;
     }
 
@@ -134,6 +149,28 @@ class WatchlistNotifier extends StateNotifier<WatchlistState> {
     return true;
   }
 
+  bool insertStockIntoActiveWatchlist(String symbol, int index) {
+    final active = state.activeWatchlist;
+    if (active == null) return false;
+
+    if (active.symbols.contains(symbol)) {
+      return false;
+    }
+
+    final updatedSymbols = List<String>.from(active.symbols);
+    final targetIndex = index.clamp(0, updatedSymbols.length);
+    updatedSymbols.insert(targetIndex, symbol);
+
+    final updatedWatchlist = active.copyWith(symbols: updatedSymbols);
+    final updatedList = state.watchlists.map((w) {
+      return w.id == active.id ? updatedWatchlist : w;
+    }).toList();
+
+    state = state.copyWith(watchlists: updatedList);
+    _persist();
+    return true;
+  }
+
   void removeStockFromActiveWatchlist(String symbol) {
     final active = state.activeWatchlist;
     if (active == null) return;
@@ -149,6 +186,19 @@ class WatchlistNotifier extends StateNotifier<WatchlistState> {
     _persist();
   }
 
+  void removeStockFromWatchlist(String watchlistId, String symbol) {
+    final updatedList = state.watchlists.map((w) {
+      if (w.id == watchlistId) {
+        final updatedSymbols = w.symbols.where((s) => s != symbol).toList();
+        return w.copyWith(symbols: updatedSymbols);
+      }
+      return w;
+    }).toList();
+
+    state = state.copyWith(watchlists: updatedList);
+    _persist();
+  }
+
   void reorderActiveWatchlist(int oldIndex, int newIndex) {
     final active = state.activeWatchlist;
     if (active == null) return;
@@ -157,7 +207,10 @@ class WatchlistNotifier extends StateNotifier<WatchlistState> {
     if (oldIndex < newIndex) {
       newIndex -= 1;
     }
-    if (oldIndex < 0 || oldIndex >= symbols.length || newIndex < 0 || newIndex >= symbols.length) {
+    if (oldIndex < 0 ||
+        oldIndex >= symbols.length ||
+        newIndex < 0 ||
+        newIndex >= symbols.length) {
       return;
     }
 

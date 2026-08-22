@@ -20,6 +20,8 @@ class EmptyStateView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -30,22 +32,26 @@ class EmptyStateView extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.surfaceElevated,
+                color: colors.surfaceElevated,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: colors.border),
               ),
-              child: Icon(icon, size: 40, color: AppColors.textSecondary),
+              child: Icon(icon, size: 40, color: colors.textSecondary),
             ),
             const SizedBox(height: 16),
             Text(
               title,
-              style: AppTextStyles.headingSmall,
+              style: AppTextStyles.headingSmall.copyWith(
+                color: colors.textPrimary,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               message,
-              style: AppTextStyles.bodyMedium,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: colors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
             if (buttonText != null && onButtonPressed != null) ...[

@@ -91,6 +91,8 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     final stock = StockConstants.stockMap[widget.symbol] ??
         Stock(
           symbol: widget.symbol,
@@ -120,7 +122,7 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
         : 0;
 
     final isBuy = _selectedSide == OrderSide.buy;
-    final themeColor = isBuy ? AppColors.gain : AppColors.loss;
+    final themeColor = isBuy ? colors.gain : colors.loss;
 
     // Live inline validation check
     String? liveWarning;
@@ -135,9 +137,16 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.symbol} Order Ticket'),
+        title: Text(
+          '${widget.symbol} Order Ticket',
+          style: TextStyle(
+            fontFamily: 'Hanken Grotesk',
+            fontWeight: FontWeight.w700,
+            color: colors.textPrimary,
+          ),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, color: colors.textPrimary),
           onPressed: () => context.pop(),
         ),
       ),
@@ -148,6 +157,11 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
           children: [
             // Top Stock & Live Price Card
             Card(
+              color: colors.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: colors.border),
+              ),
               child: PriceFlashWidget(
                 tick: tick,
                 padding: const EdgeInsets.all(16),
@@ -157,9 +171,19 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(widget.symbol, style: AppTextStyles.headingMedium),
+                        Text(
+                          widget.symbol,
+                          style: AppTextStyles.headingMedium.copyWith(
+                            color: colors.textPrimary,
+                          ),
+                        ),
                         const SizedBox(height: 4),
-                        Text(stock.companyName, style: AppTextStyles.bodySmall),
+                        Text(
+                          stock.companyName,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: colors.textSecondary,
+                          ),
+                        ),
                       ],
                     ),
                     Column(
@@ -167,16 +191,19 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
                       children: [
                         Text(
                           MoneyFormatter.formatPaise(ltpPaise),
-                          style: AppTextStyles.monoNumbersLarge,
+                          style: AppTextStyles.monoNumbersLarge.copyWith(
+                            color: colors.textPrimary,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '${MoneyFormatter.formatPaiseWithSign(changePaise)} (${MoneyFormatter.formatPercent(changePercent)})',
                           style: TextStyle(
-                            color: changePaise >= 0 ? AppColors.gain : AppColors.loss,
+                            color: changePaise >= 0 ? colors.gain : colors.loss,
                             fontWeight: FontWeight.w600,
                             fontSize: 12,
-                            fontFamily: 'monospace',
+                            fontFamily: 'JetBrains Mono',
+                            fontFeatures: const [FontFeature.tabularFigures()],
                           ),
                         ),
                       ],
@@ -191,9 +218,9 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
             // Buy / Sell Selector
             Container(
               decoration: BoxDecoration(
-                color: AppColors.surfaceElevated,
+                color: colors.surfaceElevated,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.border),
+                border: Border.all(color: colors.border),
               ),
               padding: const EdgeInsets.all(4),
               child: Row(
@@ -205,17 +232,18 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
-                          color: isBuy ? AppColors.gainBg : Colors.transparent,
+                          color: isBuy ? colors.gainBg : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
-                          border: isBuy ? Border.all(color: AppColors.gain) : null,
+                          border: isBuy ? Border.all(color: colors.gain) : null,
                         ),
                         alignment: Alignment.center,
                         child: Text(
                           'BUY',
                           style: TextStyle(
+                            fontFamily: 'Inter',
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
-                            color: isBuy ? AppColors.gain : AppColors.textSecondary,
+                            color: isBuy ? colors.gain : colors.textSecondary,
                           ),
                         ),
                       ),
@@ -229,17 +257,18 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         decoration: BoxDecoration(
-                          color: !isBuy ? AppColors.lossBg : Colors.transparent,
+                          color: !isBuy ? colors.lossBg : Colors.transparent,
                           borderRadius: BorderRadius.circular(8),
-                          border: !isBuy ? Border.all(color: AppColors.loss) : null,
+                          border: !isBuy ? Border.all(color: colors.loss) : null,
                         ),
                         alignment: Alignment.center,
                         child: Text(
                           'SELL',
                           style: TextStyle(
+                            fontFamily: 'Inter',
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
-                            color: !isBuy ? AppColors.loss : AppColors.textSecondary,
+                            color: !isBuy ? colors.loss : colors.textSecondary,
                           ),
                         ),
                       ),
@@ -255,17 +284,24 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Quantity (Shares)', style: AppTextStyles.labelLarge),
+                Text(
+                  'Quantity (Shares)',
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: colors.textPrimary,
+                  ),
+                ),
                 if (isBuy)
                   Text(
                     'Available: ${MoneyFormatter.formatPaise(balancePaise)}',
-                    style: AppTextStyles.bodySmall,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: colors.textSecondary,
+                    ),
                   )
                 else
                   Text(
                     'Held: ${QuantityUtils.formatQuantity(heldUnits)} shares',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: heldUnits > 0 ? AppColors.textPrimary : AppColors.loss,
+                      color: heldUnits > 0 ? colors.textPrimary : colors.loss,
                     ),
                   ),
               ],
@@ -274,11 +310,15 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
             TextField(
               controller: _qtyController,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              style: AppTextStyles.monoNumbersLarge,
-              decoration: const InputDecoration(
+              style: AppTextStyles.monoNumbersLarge.copyWith(
+                color: colors.textPrimary,
+              ),
+              decoration: InputDecoration(
                 hintText: 'Enter quantity (e.g. 10 or 1.5)',
                 suffixText: 'Shares',
-                suffixStyle: AppTextStyles.bodyMedium,
+                suffixStyle: AppTextStyles.bodyMedium.copyWith(
+                  color: colors.textSecondary,
+                ),
               ),
               onChanged: (_) => setState(() => _validationError = null),
             ),
@@ -290,34 +330,34 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
               spacing: 8,
               children: [
                 ActionChip(
-                  label: const Text('+1'),
-                  backgroundColor: AppColors.chipBackground,
-                  side: const BorderSide(color: AppColors.border),
+                  label: Text('+1', style: TextStyle(color: colors.textPrimary)),
+                  backgroundColor: colors.chipBackground,
+                  side: BorderSide(color: colors.border),
                   onPressed: () => _addQuantity(1),
                 ),
                 ActionChip(
-                  label: const Text('+5'),
-                  backgroundColor: AppColors.chipBackground,
-                  side: const BorderSide(color: AppColors.border),
+                  label: Text('+5', style: TextStyle(color: colors.textPrimary)),
+                  backgroundColor: colors.chipBackground,
+                  side: BorderSide(color: colors.border),
                   onPressed: () => _addQuantity(5),
                 ),
                 ActionChip(
-                  label: const Text('+10'),
-                  backgroundColor: AppColors.chipBackground,
-                  side: const BorderSide(color: AppColors.border),
+                  label: Text('+10', style: TextStyle(color: colors.textPrimary)),
+                  backgroundColor: colors.chipBackground,
+                  side: BorderSide(color: colors.border),
                   onPressed: () => _addQuantity(10),
                 ),
                 ActionChip(
-                  label: const Text('+50'),
-                  backgroundColor: AppColors.chipBackground,
-                  side: const BorderSide(color: AppColors.border),
+                  label: Text('+50', style: TextStyle(color: colors.textPrimary)),
+                  backgroundColor: colors.chipBackground,
+                  side: BorderSide(color: colors.border),
                   onPressed: () => _addQuantity(50),
                 ),
                 if (!isBuy && heldUnits > 0)
                   ActionChip(
-                    label: const Text('MAX'),
-                    backgroundColor: AppColors.chipBackground,
-                    side: const BorderSide(color: AppColors.lossBorder),
+                    label: Text('MAX', style: TextStyle(color: colors.loss)),
+                    backgroundColor: colors.chipBackground,
+                    side: BorderSide(color: colors.lossBorder),
                     onPressed: () => _setQuantity(heldUnits / 1000.0),
                   ),
               ],
@@ -327,7 +367,11 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
 
             // Summary Card
             Card(
-              color: AppColors.surfaceElevated,
+              color: colors.surfaceElevated,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: colors.border),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -335,14 +379,24 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Execution Type', style: AppTextStyles.bodyMedium),
+                        Text(
+                          'Execution Type',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: colors.textSecondary,
+                          ),
+                        ),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
-                            color: AppColors.chipBackground,
+                            color: colors.chipBackground,
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text('MARKET (LTP)', style: AppTextStyles.labelMedium),
+                          child: Text(
+                            'MARKET (LTP)',
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: colors.textPrimary,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -350,18 +404,30 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Live Market Price', style: AppTextStyles.bodyMedium),
+                        Text(
+                          'Live Market Price',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: colors.textSecondary,
+                          ),
+                        ),
                         Text(
                           MoneyFormatter.formatPaise(ltpPaise),
-                          style: AppTextStyles.monoNumbers,
+                          style: AppTextStyles.monoNumbers.copyWith(
+                            color: colors.textPrimary,
+                          ),
                         ),
                       ],
                     ),
-                    const Divider(height: 24),
+                    Divider(height: 24, color: colors.divider),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Estimated Order Value', style: AppTextStyles.labelLarge),
+                        Text(
+                          'Estimated Order Value',
+                          style: AppTextStyles.labelLarge.copyWith(
+                            color: colors.textPrimary,
+                          ),
+                        ),
                         Text(
                           MoneyFormatter.formatPaise(projectedValuePaise),
                           style: AppTextStyles.monoNumbersLarge.copyWith(
@@ -381,19 +447,19 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.lossBg,
+                  color: colors.lossBg,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.lossBorder),
+                  border: Border.all(color: colors.lossBorder),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.error_outline, size: 18, color: AppColors.loss),
+                    Icon(Icons.error_outline, size: 18, color: colors.loss),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         _validationError ?? liveWarning ?? '',
-                        style: const TextStyle(
-                          color: AppColors.loss,
+                        style: TextStyle(
+                          color: colors.loss,
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
@@ -418,6 +484,7 @@ class _OrderTicketScreenState extends ConsumerState<OrderTicketScreen> {
               child: Text(
                 '${isBuy ? 'BUY' : 'SELL'} ${widget.symbol}',
                 style: const TextStyle(
+                  fontFamily: 'Inter',
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.5,

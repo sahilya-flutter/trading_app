@@ -12,7 +12,9 @@ final localStorageServiceProvider = Provider<LocalStorageService>((ref) {
 
 /// Central Mock Market Feed Singleton Provider
 final marketFeedProvider = Provider<MockMarketFeed>((ref) {
-  final feed = MockMarketFeed();
+  final storage = ref.watch(localStorageServiceProvider);
+  final initialRate = storage.loadTickRate();
+  final feed = MockMarketFeed(initialTickRate: initialRate);
   feed.start();
   ref.onDispose(() {
     feed.dispose();
@@ -20,8 +22,34 @@ final marketFeedProvider = Provider<MockMarketFeed>((ref) {
   return feed;
 });
 
+/// Tick rate notifier that persists and controls feed interval
+class TickRateNotifier extends StateNotifier<int> {
+  final MockMarketFeed _feed;
+  final LocalStorageService _storage;
+
+  TickRateNotifier(this._feed, this._storage)
+      : super(_storage.loadTickRate()) {
+    _feed.setTickRate(state);
+  }
+
+  void setTickRate(int rate) {
+    if (rate <= 0) return;
+    state = rate;
+    _feed.setTickRate(rate);
+    _storage.saveTickRate(rate);
+  }
+}
+
+final tickRateProvider =
+    StateNotifierProvider<TickRateNotifier, int>((ref) {
+  final feed = ref.watch(marketFeedProvider);
+  final storage = ref.watch(localStorageServiceProvider);
+  return TickRateNotifier(feed, storage);
+});
+
 /// Stress mode toggle provider
-final stressModeProvider = StateNotifierProvider<StressModeNotifier, bool>((ref) {
+final stressModeProvider =
+    StateNotifierProvider<StressModeNotifier, bool>((ref) {
   final feed = ref.watch(marketFeedProvider);
   return StressModeNotifier(feed);
 });
@@ -69,7 +97,8 @@ final marketPricesProvider =
 
 /// Highly optimized granular provider for a single symbol
 /// Only widgets watching this exact symbol will rebuild when its price changes
-final singleStockPriceProvider = Provider.family<PriceTick?, String>((ref, symbol) {
+final singleStockPriceProvider =
+    Provider.family<PriceTick?, String>((ref, symbol) {
   final prices = ref.watch(marketPricesProvider);
   return prices[symbol];
 });

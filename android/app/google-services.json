@@ -1,26 +1,44 @@
 {
   "project_info": {
-    "project_number": "1021021021",
+    "project_number": "665362863693",
     "project_id": "tradingapp-18fa5",
     "storage_bucket": "tradingapp-18fa5.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1021021021:android:tradingapp18fa5",
+        "mobilesdk_app_id": "1:665362863693:android:5bd5288f9467c8a1386e04",
         "android_client_info": {
           "package_name": "com.tradingapp.trading_app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "665362863693-j5dnbto6k0d6ova92khfa65dda1g288c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tradingapp.trading_app",
+            "certificate_hash": "c1b7cd8c69f458dcb5316ed92af87a1c23c7b256"
+          }
+        },
+        {
+          "client_id": "665362863693-b12a3abk656jug72b73tfkngb1mfpt1d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyTradingAppAndroidKey"
+          "current_key": "AIzaSyCvgI52y4WosOtxTFjmW27YkIHS8btvx6g"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "665362863693-b12a3abk656jug72b73tfkngb1mfpt1d.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
