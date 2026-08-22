@@ -1,9 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import '../../../persistence/local_storage_service.dart';
-import '../../market/presentation/market_providers.dart';
 import '../../notifications/domain/notification_item.dart';
 import '../../notifications/presentation/notifications_providers.dart';
+import '../data/watchlist_repository.dart';
 import '../domain/watchlist.dart';
 
 class WatchlistState {
@@ -35,14 +34,14 @@ class WatchlistState {
 }
 
 class WatchlistNotifier extends StateNotifier<WatchlistState> {
-  final LocalStorageService _storage;
+  final WatchlistRepository _repository;
   final Ref? _ref;
   final Uuid _uuid = const Uuid();
 
-  WatchlistNotifier(this._storage, [this._ref])
+  WatchlistNotifier(this._repository, [this._ref])
       : super(WatchlistState(
-          watchlists: _storage.loadWatchlists(),
-          activeWatchlistId: _storage.loadActiveWatchlistId(),
+          watchlists: _repository.loadWatchlists(),
+          activeWatchlistId: _repository.loadActiveWatchlistId(),
         )) {
     // Ensure activeWatchlistId is valid and at least one watchlist exists
     if (state.watchlists.isEmpty) {
@@ -63,8 +62,16 @@ class WatchlistNotifier extends StateNotifier<WatchlistState> {
   }
 
   void _persist() {
-    _storage.saveWatchlists(state.watchlists);
-    _storage.saveActiveWatchlistId(state.activeWatchlistId);
+    _repository.saveWatchlists(state.watchlists);
+    _repository.saveActiveWatchlistId(state.activeWatchlistId);
+  }
+
+  bool isNameDuplicate(String name, {String? excludeId}) {
+    final clean = name.trim().toLowerCase();
+    if (clean.isEmpty) return false;
+    return state.watchlists.any(
+      (w) => w.id != excludeId && w.name.trim().toLowerCase() == clean,
+    );
   }
 
   void setActiveWatchlist(String id) {
@@ -77,6 +84,16 @@ class WatchlistNotifier extends StateNotifier<WatchlistState> {
   String createWatchlist(String name) {
     final cleanName = name.trim();
     if (cleanName.isEmpty) return state.activeWatchlistId;
+
+    // Check if name already exists
+    if (isNameDuplicate(cleanName)) {
+      // Return existing watchlist id if duplicate
+      final existing = state.watchlists.firstWhere(
+        (w) => w.name.trim().toLowerCase() == cleanName.toLowerCase(),
+      );
+      setActiveWatchlist(existing.id);
+      return existing.id;
+    }
 
     final newWatchlist = Watchlist(
       id: _uuid.v4(),
@@ -105,6 +122,9 @@ class WatchlistNotifier extends StateNotifier<WatchlistState> {
   void renameWatchlist(String id, String newName) {
     final cleanName = newName.trim();
     if (cleanName.isEmpty) return;
+
+    // Check duplicate
+    if (isNameDuplicate(cleanName, excludeId: id)) return;
 
     String? oldName;
     final updated = state.watchlists.map((w) {
@@ -301,8 +321,8 @@ class WatchlistNotifier extends StateNotifier<WatchlistState> {
 
 final watchlistProvider =
     StateNotifierProvider<WatchlistNotifier, WatchlistState>((ref) {
-  final storage = ref.watch(localStorageServiceProvider);
-  return WatchlistNotifier(storage, ref);
+  final repo = ref.watch(watchlistRepositoryProvider);
+  return WatchlistNotifier(repo, ref);
 });
 
 final activeWatchlistProvider = Provider<Watchlist?>((ref) {

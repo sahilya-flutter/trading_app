@@ -48,6 +48,20 @@ void main() {
       expect(state.activeWatchlist!.symbols.isEmpty, isTrue);
     });
 
+    test('Duplicate watchlist names are detected and handled gracefully', () {
+      final notifier = container.read(watchlistProvider.notifier);
+      final id1 = notifier.createWatchlist('Tech Giants');
+
+      expect(notifier.isNameDuplicate('Tech Giants'), isTrue);
+      expect(notifier.isNameDuplicate('  tech giants  '), isTrue);
+      expect(notifier.isNameDuplicate('Unique Name'), isFalse);
+
+      // Attempt creating duplicate returns existing ID and switches to it
+      final id2 = notifier.createWatchlist('Tech Giants');
+      expect(id2, id1);
+      expect(container.read(watchlistProvider).activeWatchlistId, id1);
+    });
+
     test('Adding and removing stock from active watchlist works & prevents duplicates', () {
       final notifier = container.read(watchlistProvider.notifier);
       notifier.createWatchlist('Tech');
@@ -100,7 +114,7 @@ void main() {
       expect(wlB.symbols, ['RELIANCE', 'INFY']);
     });
 
-    test('Reordering symbols maintains correct list order', () {
+    test('Reordering symbols maintains correct list order and persists', () {
       final notifier = container.read(watchlistProvider.notifier);
       notifier.createWatchlist('Test Reorder');
       notifier.addStockToActiveWatchlist('RELIANCE');
@@ -132,6 +146,22 @@ void main() {
       expect(freshWatchlists.any((w) => w.id == id), isFalse);
     });
 
+    test('Deleting active watchlist switches active to remaining valid watchlist', () {
+      final notifier = container.read(watchlistProvider.notifier);
+      final id1 = notifier.createWatchlist('List 1');
+      final id2 = notifier.createWatchlist('List 2');
+
+      expect(container.read(watchlistProvider).activeWatchlistId, id2);
+
+      // Delete currently active list (id2)
+      notifier.deleteWatchlist(id2);
+
+      final state = container.read(watchlistProvider);
+      expect(state.activeWatchlistId, isNot(id2));
+      expect(state.activeWatchlist, isNotNull);
+      expect(state.watchlists.any((w) => w.id == id1), isTrue);
+    });
+
     test('Undo insertion works at the specified index', () {
       final notifier = container.read(watchlistProvider.notifier);
       notifier.createWatchlist('Undo Test');
@@ -143,6 +173,19 @@ void main() {
       expect(inserted, isTrue);
       expect(container.read(watchlistProvider).activeWatchlist!.symbols,
           ['RELIANCE', 'TCS', 'INFY']);
+    });
+
+    test('Symbol-based price binding correctly connects to centralized market feed', () {
+      final prices = container.read(marketPricesProvider);
+
+      // Price for RELIANCE is looked up by symbol
+      final reliancePrice = prices['RELIANCE']?.ltpPaise;
+      expect(reliancePrice, isNotNull);
+      expect(reliancePrice! > 0, isTrue);
+
+      final tcsPrice = prices['TCS']?.ltpPaise;
+      expect(tcsPrice, isNotNull);
+      expect(tcsPrice! > 0, isTrue);
     });
   });
 }

@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:trading_app/app/app.dart';
 import 'package:trading_app/features/auth/domain/user_profile.dart';
 import 'package:trading_app/features/market/presentation/market_providers.dart';
+import 'package:trading_app/features/order/presentation/order_ticket_screen.dart';
 import 'package:trading_app/features/watchlist/presentation/watchlist_providers.dart';
 import 'package:trading_app/features/watchlist/presentation/widgets/add_stock_sheet.dart';
 import 'package:trading_app/persistence/local_storage_service.dart';
@@ -18,7 +19,7 @@ void main() {
       storage = await LocalStorageService.create();
     });
 
-    testWidgets('Watchlist Screen renders exact design specifications',
+    testWidgets('Watchlist Screen renders exact design specifications with search filtering',
         (WidgetTester tester) async {
       // Set larger test viewport to display all 6 dense rows and bottom button cleanly
       tester.view.physicalSize = const Size(1080, 2400);
@@ -89,12 +90,17 @@ void main() {
       expect(find.byType(AddStockSheet), findsOneWidget);
       expect(find.text('Add stocks'), findsWidgets);
 
-      // Verify 10 stocks present in sheet
-      expect(find.text('AXISBANK'), findsOneWidget);
-      expect(find.text('BHARTIARTL'), findsOneWidget);
-      expect(find.text('LT'), findsOneWidget);
+      // Test Search Bar in AddStockSheet
+      final searchInput = find.byType(TextField);
+      expect(searchInput, findsOneWidget);
+      await tester.enterText(searchInput, 'AXIS');
+      await tester.pumpAndSettle();
 
-      // Select an unselected stock (e.g. AXISBANK)
+      // AXISBANK should be visible, others filtered out
+      expect(find.text('AXISBANK'), findsOneWidget);
+      expect(find.text('BHARTIARTL'), findsNothing);
+
+      // Select AXISBANK
       final axisRow = find.text('AXISBANK');
       await tester.tap(axisRow);
       await tester.pumpAndSettle();
@@ -106,7 +112,7 @@ void main() {
       await tester.tap(find.text('Add 1 stock'));
       await tester.pumpAndSettle();
 
-      // Sheet should close and AXISBANK is now in watchlist (7 stocks)
+      // Sheet should close and AXISBANK is now in watchlist
       expect(find.byType(AddStockSheet), findsNothing);
       expect(find.text('AXISBANK'), findsOneWidget);
     });
@@ -212,6 +218,48 @@ void main() {
       );
       expect(find.byIcon(Icons.playlist_add), findsOneWidget);
       expect(find.widgetWithText(ElevatedButton, 'Add stocks'), findsOneWidget);
+    });
+
+    testWidgets('Tapping a stock row opens the Buy/Sell ticket pre-filled with symbol',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await storage.saveAuthProfile(const UserProfile(
+        id: 'test_user',
+        email: 'trader@gmail.com',
+        displayName: 'Test Trader',
+        provider: 'google',
+        isDemo: true,
+      ));
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            localStorageServiceProvider.overrideWithValue(storage),
+          ],
+          child: const TradingApp(),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Switch to Watchlist Tab
+      await tester.tap(find.text('Watchlist').first);
+      await tester.pumpAndSettle();
+
+      // Tap RELIANCE row
+      final relianceFinder = find.byKey(const Key('watchlist_row_RELIANCE'));
+      await tester.tap(relianceFinder);
+      await tester.pumpAndSettle();
+
+      // Verify Order Ticket opened with RELIANCE
+      expect(find.byType(OrderTicketScreen), findsOneWidget);
+      expect(find.text('RELIANCE'), findsWidgets);
     });
   });
 }
