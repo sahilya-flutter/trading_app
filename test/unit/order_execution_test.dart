@@ -11,11 +11,12 @@ import 'package:trading_app/persistence/local_storage_service.dart';
 
 void main() {
   group('Order Execution & Wallet/Holding Integration Tests', () {
+    late LocalStorageService storage;
     late ProviderContainer container;
 
     setUp(() async {
       SharedPreferences.setMockInitialValues({});
-      final storage = await LocalStorageService.create();
+      storage = await LocalStorageService.create();
 
       container = ProviderContainer(
         overrides: [
@@ -31,6 +32,28 @@ void main() {
     test('Initial wallet balance starts at ₹1,00,000.00 (10,000,000 paise)', () {
       final balance = container.read(walletBalancePaiseProvider);
       expect(balance, AppConstants.initialWalletBalancePaise);
+    });
+
+    test('Zero or negative quantity is strictly rejected without state changes', () {
+      final notifier = container.read(orderHistoryProvider.notifier);
+      final initialBalance = container.read(walletBalancePaiseProvider);
+
+      final zeroResult = notifier.executeOrder(
+        symbol: 'RELIANCE',
+        side: OrderSide.buy,
+        quantityUnits: 0,
+      );
+      expect(zeroResult.isSuccess, isFalse);
+      expect(zeroResult.errorMessage, contains('greater than zero'));
+
+      final negResult = notifier.executeOrder(
+        symbol: 'RELIANCE',
+        side: OrderSide.buy,
+        quantityUnits: -1000,
+      );
+      expect(negResult.isSuccess, isFalse);
+      expect(container.read(walletBalancePaiseProvider), initialBalance);
+      expect(container.read(holdingsProvider).isEmpty, isTrue);
     });
 
     test('Buy order succeeds, deducts wallet, and creates holding', () {
@@ -59,12 +82,45 @@ void main() {
       expect(holdings.containsKey('RELIANCE'), isTrue);
       expect(holdings['RELIANCE']!.quantityUnits, 2000);
       expect(holdings['RELIANCE']!.averagePricePaise, result.order!.executionPricePaise);
+
+      // Order history should contain this order
+      final orders = container.read(orderHistoryProvider);
+      expect(orders.first.id, result.order!.id);
+    });
+
+    test('Buying additional shares recalculates weighted average price accurately', () {
+      final notifier = container.read(orderHistoryProvider.notifier);
+
+      // Buy 1 share of TCS
+      final buy1 = notifier.executeOrder(
+        symbol: 'TCS',
+        side: OrderSide.buy,
+        quantityUnits: 1000,
+      );
+      expect(buy1.isSuccess, isTrue);
+
+      final price1 = buy1.order!.executionPricePaise;
+
+      // Buy 2 more shares of TCS
+      final buy2 = notifier.executeOrder(
+        symbol: 'TCS',
+        side: OrderSide.buy,
+        quantityUnits: 2000,
+      );
+      expect(buy2.isSuccess, isTrue);
+
+      final price2 = buy2.order!.executionPricePaise;
+      final expectedAvg = ((1000 * price1) + (2000 * price2)) ~/ 3000;
+
+      final holdings = container.read(holdingsProvider);
+      expect(holdings['TCS']!.quantityUnits, 3000);
+      expect(holdings['TCS']!.averagePricePaise, expectedAvg);
     });
 
     test('Buy order fails when order value exceeds wallet balance', () {
       final notifier = container.read(orderHistoryProvider.notifier);
 
-      // Try buying 1000 shares of TCS (worth ~₹39,80,000, way over ₹1,00,000 balance)
+      // Try buying 1000 shares of TCS (worth ~₹39,00,000, way over ₹1,00,000 balance)
       final result = notifier.executeOrder(
         symbol: 'TCS',
         side: OrderSide.buy,
@@ -73,6 +129,7 @@ void main() {
 
       expect(result.isSuccess, isFalse);
       expect(result.errorMessage, contains('Insufficient cash balance'));
+      expect(container.read(holdingsProvider).containsKey('TCS'), isFalse);
     });
 
     test('Sell order reduces holding and credits wallet; full sell removes holding', () {
@@ -126,6 +183,37 @@ void main() {
 
       expect(result.isSuccess, isFalse);
       expect(result.errorMessage, contains('Cannot sell more than held quantity'));
+    });
+
+    test('State persists correctly in LocalStorageService after Buy and Sell operations', () async {
+      final notifier = container.read(orderHistoryProvider.notifier);
+
+      notifier.executeOrder(
+        symbol: 'SBIN',
+        side: OrderSide.buy,
+        quantityUnits: 4000,
+      );
+
+      final currentBalance = container.read(walletBalancePaiseProvider);
+
+      // Re-create storage and container to simulate cold app restart
+      final freshStorage = await LocalStorageService.create();
+      final freshContainer = ProviderContainer(
+        overrides: [
+          localStorageServiceProvider.overrideWithValue(freshStorage),
+        ],
+      );
+
+      expect(freshContainer.read(walletBalancePaiseProvider), currentBalance);
+      final freshHoldings = freshContainer.read(holdingsProvider);
+      expect(freshHoldings.containsKey('SBIN'), isTrue);
+      expect(freshHoldings['SBIN']!.quantityUnits, 4000);
+
+      final freshOrders = freshContainer.read(orderHistoryProvider);
+      expect(freshOrders.length, 1);
+      expect(freshOrders.first.symbol, 'SBIN');
+
+      freshContainer.dispose();
     });
   });
 }
